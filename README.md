@@ -1,3 +1,9 @@
+> **Private pruning development baseline:** upstream `modelscope/evalscope`, exact
+> base **`66f0945d145ce6c30de40253cd78144003c6f1fe`**. See
+> [PRUNING_BASELINE.md](PRUNING_BASELINE.md) for issue #18's native `pruning_smoke`
+> integration, setup, provenance, limitations and verification. Original upstream
+> documentation follows.
+
 <p align="center">
     <br>
     <img src="docs/en/_static/images/evalscope_logo.png"/>

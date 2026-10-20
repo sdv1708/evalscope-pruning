@@ -133,6 +133,7 @@
 | `poly_math` | [PolyMath](../../benchmarks/poly_math.md) | `Math`, `MultiLingual`, `Reasoning` |
 | `prbench` | [PRBench](../../benchmarks/prbench.md) | `Knowledge`, `MultiTurn`, `QA`, `Reasoning` |
 | `process_bench` | [ProcessBench](../../benchmarks/process_bench.md) | `Math`, `Reasoning` |
+| `pruning_smoke` | [Pruning Smoke (Synthetic)](../../benchmarks/pruning_smoke.md) | `Custom`, `QA` |
 | `pubmedqa` | [PubMedQA](../../benchmarks/pubmedqa.md) | `Knowledge`, `Yes/No` |
 | `qasc` | [QASC](../../benchmarks/qasc.md) | `Knowledge`, `MCQ` |
 | `race` | [RACE](../../benchmarks/race.md) | `MCQ`, `Reasoning` |
@@ -295,6 +296,7 @@
 ../../benchmarks/poly_math.md
 ../../benchmarks/prbench.md
 ../../benchmarks/process_bench.md
+../../benchmarks/pruning_smoke.md
 ../../benchmarks/pubmedqa.md
 ../../benchmarks/qasc.md
 ../../benchmarks/race.md

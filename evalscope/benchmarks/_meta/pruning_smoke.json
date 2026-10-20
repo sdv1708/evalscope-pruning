@@ -1,0 +1,82 @@
+{
+  "meta": {
+    "pretty_name": "Pruning Smoke (Synthetic)",
+    "dataset_id": "pruning_smoke",
+    "paper_url": null,
+    "tags": [
+      "QA",
+      "Custom"
+    ],
+    "metrics": [
+      "exact_match"
+    ],
+    "few_shot_num": 0,
+    "eval_split": "test",
+    "train_split": "",
+    "subset_list": [
+      "smoke"
+    ],
+    "description": "\n## Overview\n\nA six-question synthetic benchmark that exercises native subset selection inside\nEvalScope. This is an integration smoke path, not LiveCodeBench or AA-LCR.\n\n## Task Description\n\n- **Task Type**: Synthetic question answering\n- **Input**: A short question with stable identity and a metadata stratum\n- **Output**: A short text answer\n- **Domain**: Framework integration testing\n\n## Key Features\n\n- Bundled local fixture: two questions in each of easy, medium and hard groups\n- Deterministic hash priorities select one question per group by default\n- Selection uses metadata and identity, never target-model scores\n\n## Evaluation Notes\n\n- Exact-match scoring and ordinary subset-mean aggregation\n- Runs through the normal evaluator, including mock_llm, with no API key\n- Selection precedes limit and repeats; a debugging limit may remove coverage\n- Fixed per-stratum allocation is a smoke policy, not a validated pruning strategy\n- Scores are synthetic subset scores, not estimates of a full benchmark\n",
+    "prompt_template": "{question}",
+    "system_prompt": "",
+    "few_shot_prompt_template": "",
+    "aggregation": "mean",
+    "extra_params": {
+      "keep_per_stratum": {
+        "type": "int",
+        "description": "Positive number retained per synthetic metadata group; not a production policy.",
+        "value": 1
+      }
+    },
+    "sandbox_config": {},
+    "category": "llm"
+  },
+  "statistics": {
+    "total_samples": 3,
+    "subset_stats": [
+      {
+        "name": "smoke",
+        "sample_count": 3,
+        "prompt_length_mean": 24.67,
+        "prompt_length_min": 14,
+        "prompt_length_max": 42,
+        "prompt_length_std": 15.14,
+        "target_length_mean": 2.33
+      }
+    ],
+    "prompt_length": {
+      "mean": 24.67,
+      "min": 14,
+      "max": 42,
+      "std": 15.14
+    },
+    "target_length_mean": 2.33,
+    "computed_at": "2026-10-19T23:33:14.880417"
+  },
+  "sample_example": {
+    "data": {
+      "input": [
+        {
+          "id": "52356e3e",
+          "content": "What is 1 + 1?"
+        }
+      ],
+      "target": "2",
+      "id": 0,
+      "group_id": 0,
+      "metadata": {
+        "record_id": "easy-1",
+        "stratum": "easy"
+      }
+    },
+    "subset": "smoke",
+    "truncated": false
+  },
+  "readme": {
+    "en": "# Pruning Smoke (Synthetic)\n\n\n## Overview\n\nA six-question synthetic benchmark that exercises native subset selection inside\nEvalScope. This is an integration smoke path, not LiveCodeBench or AA-LCR.\n\n## Task Description\n\n- **Task Type**: Synthetic question answering\n- **Input**: A short question with stable identity and a metadata stratum\n- **Output**: A short text answer\n- **Domain**: Framework integration testing\n\n## Key Features\n\n- Bundled local fixture: two questions in each of easy, medium and hard groups\n- Deterministic hash priorities select one question per group by default\n- Selection uses metadata and identity, never target-model scores\n\n## Evaluation Notes\n\n- Exact-match scoring and ordinary subset-mean aggregation\n- Runs through the normal evaluator, including mock_llm, with no API key\n- Selection precedes limit and repeats; a debugging limit may remove coverage\n- Fixed per-stratum allocation is a smoke policy, not a validated pruning strategy\n- Scores are synthetic subset scores, not estimates of a full benchmark\n\n\n## Properties\n\n| Property | Value |\n|----------|-------|\n| **Benchmark Name** | `pruning_smoke` |\n| **Dataset ID** | `pruning_smoke` |\n| **Paper** | N/A |\n| **Tags** | `Custom`, `QA` |\n| **Metrics** | `exact_match` |\n| **Default Shots** | 0-shot |\n| **Evaluation Split** | `test` |\n\n\n## Data Statistics\n\n| Metric | Value |\n|--------|-------|\n| Total Samples | 3 |\n| Prompt Length (Mean) | 24.67 chars |\n| Prompt Length (Min/Max) | 14 / 42 chars |\n\n## Sample Example\n\n**Subset**: `smoke`\n\n```json\n{\n  \"input\": [\n    {\n      \"id\": \"52356e3e\",\n      \"content\": \"What is 1 + 1?\"\n    }\n  ],\n  \"target\": \"2\",\n  \"id\": 0,\n  \"group_id\": 0,\n  \"metadata\": {\n    \"record_id\": \"easy-1\",\n    \"stratum\": \"easy\"\n  }\n}\n```\n\n## Prompt Template\n\n**Prompt Template:**\n```text\n{question}\n```\n\n## Extra Parameters\n\n| Parameter | Type | Default | Description |\n|-----------|------|---------|-------------|\n| `keep_per_stratum` | `int` | `1` | Positive number retained per synthetic metadata group; not a production policy. |\n\n## Usage\n\n### Using CLI\n\n```bash\nevalscope eval \\\n    --model YOUR_MODEL \\\n    --api-url OPENAI_API_COMPAT_URL \\\n    --api-key EMPTY_TOKEN \\\n    --datasets pruning_smoke \\\n    --limit 10  # Remove this line for formal evaluation\n```\n\n### Using Python\n\n```python\nfrom evalscope import run_task\nfrom evalscope.config import TaskConfig\n\ntask_cfg = TaskConfig(\n    model='YOUR_MODEL',\n    api_url='OPENAI_API_COMPAT_URL',\n    api_key='EMPTY_TOKEN',\n    datasets=['pruning_smoke'],\n    dataset_args={\n        'pruning_smoke': {\n            # extra_params: {}  # uses default extra parameters\n        }\n    },\n    limit=10,  # Remove this line for formal evaluation\n)\n\nrun_task(task_cfg=task_cfg)\n```\n\n\n",
+    "zh": "",
+    "content_hash": "2305d80ad095071e350886ea800e9917",
+    "needs_translation": true
+  },
+  "updated_at": "2026-10-19T23:33:14.880417"
+}

@@ -1,0 +1,6 @@
+{"record_id":"easy-1","stratum":"easy","question":"What is 1 + 1?","answer":"2"}
+{"record_id":"easy-2","stratum":"easy","question":"What is 2 + 2?","answer":"4"}
+{"record_id":"medium-1","stratum":"medium","question":"What is 7 times 8?","answer":"56"}
+{"record_id":"medium-2","stratum":"medium","question":"What is 9 times 9?","answer":"81"}
+{"record_id":"hard-1","stratum":"hard","question":"What is the sum of integers from 1 to 100?","answer":"5050"}
+{"record_id":"hard-2","stratum":"hard","question":"What is 17 squared?","answer":"289"}

@@ -205,6 +205,7 @@
  "pope": "evalscope.benchmarks.pope.pope_adapter",
  "prbench": "evalscope.benchmarks.prbench.prbench_adapter",
  "process_bench": "evalscope.benchmarks.process_bench.process_bench_adapter",
+ "pruning_smoke": "evalscope.benchmarks.pruning_smoke.pruning_smoke_adapter",
  "pubmedqa": "evalscope.benchmarks.pumed_qa.pubmed_qa_adapter",
  "qasc": "evalscope.benchmarks.qasc.qasc_adapter",
  "race": "evalscope.benchmarks.race.race_adapter",
