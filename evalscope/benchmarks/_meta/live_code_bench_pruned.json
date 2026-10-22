@@ -1,0 +1,85 @@
+{
+  "meta": {
+    "pretty_name": "LiveCodeBench (Reference Pruned)",
+    "dataset_id": "evalscope/livecodebench_code_generation_lite_parquet",
+    "paper_url": null,
+    "tags": [
+      "Coding"
+    ],
+    "metrics": [
+      "accuracy"
+    ],
+    "few_shot_num": 0,
+    "eval_split": "test",
+    "train_split": "",
+    "subset_list": [
+      "release_v5"
+    ],
+    "description": "\n## Overview\n\nHistorical reference-stratified LiveCodeBench selection inside the native evaluation\npipeline. Full retention is the default: the reference analysis did not validate a\nsmaller operating point under its conservative decision policy.\n\n## Task Description\n\n- **Task Type**: Competitive programming / code generation\n- **Input**: Original LiveCodeBench problem and starter code\n- **Output**: Python solution using the standard LiveCodeBench format\n- **Domain**: Coding capability screening\n\n## Key Features\n\n- Configurable difficulty_stratified or response_stratified historical selection\n- prune_ratio is a retained fraction in (0, 1], rounded up\n- Frozen question fingerprints bind analysis indices to source problems\n- Evaluated model grades are excluded; selection precedes inference and repeats\n\n## Evaluation Notes\n\n- Inherits the LiveCodeBench prompt, date filter, extraction and code execution grader\n- Requires a local reference_path panel; benchmark downloads use standard loaders\n- Standard subset pass@k remains available alongside population-weighted accuracy\n- Use sandbox execution for generated code as in the full benchmark\n- Smaller ratios are experimental; no new GO/NO GO guarantee is certified\n",
+    "prompt_template": "### Question:\n{question_content}\n\n{format_prompt} ### Answer: (use the provided format with backticks)\n\n",
+    "system_prompt": "You are an expert Python programmer. You will be given a question (problem specification) and will generate a correct Python program that matches the specification and passes all tests. You will NOT return anything except for the program.",
+    "few_shot_prompt_template": "",
+    "aggregation": "mean_and_pass_at_k",
+    "extra_params": {
+      "start_date": {
+        "type": "str | null",
+        "description": "Filter problems starting from this date (YYYY-MM-DD). Null keeps all.",
+        "value": null
+      },
+      "end_date": {
+        "type": "str | null",
+        "description": "Filter problems up to this date (YYYY-MM-DD). Null keeps all.",
+        "value": null
+      },
+      "debug": {
+        "type": "bool",
+        "description": "Enable verbose debug logging and bypass certain safety checks.",
+        "value": false
+      },
+      "pruning_strategy": {
+        "type": "str",
+        "description": "Historical stratification policy; comparison baselines are rejected.",
+        "value": "difficulty_stratified"
+      },
+      "prune_ratio": {
+        "type": "float",
+        "description": "Fraction retained in (0, 1]; 1.0 is the defended fallback.",
+        "value": 1.0
+      },
+      "reference_path": {
+        "type": "str",
+        "description": "Local frozen reference panel JSON, schema version 1.",
+        "value": ""
+      },
+      "excluded_reference_models": {
+        "type": "list[str]",
+        "description": "Additional reference model names to exclude (for pair holdouts).",
+        "value": []
+      }
+    },
+    "sandbox_config": {
+      "image": "python:3.11-slim",
+      "tools_config": {
+        "shell_executor": {},
+        "python_executor": {}
+      }
+    },
+    "category": "llm",
+    "primary_metric": {
+      "name": "accuracy",
+      "aggregation": "weighted_mean",
+      "dimensions": {
+        "scope": "population"
+      }
+    }
+  },
+  "statistics": {},
+  "sample_example": {},
+  "readme": {
+    "en": "# LiveCodeBench (Reference Pruned)\n\n\n## Overview\n\nHistorical reference-stratified LiveCodeBench selection inside the native evaluation\npipeline. Full retention is the default: the reference analysis did not validate a\nsmaller operating point under its conservative decision policy.\n\n## Task Description\n\n- **Task Type**: Competitive programming / code generation\n- **Input**: Original LiveCodeBench problem and starter code\n- **Output**: Python solution using the standard LiveCodeBench format\n- **Domain**: Coding capability screening\n\n## Key Features\n\n- Configurable difficulty_stratified or response_stratified historical selection\n- prune_ratio is a retained fraction in (0, 1], rounded up\n- Frozen question fingerprints bind analysis indices to source problems\n- Evaluated model grades are excluded; selection precedes inference and repeats\n\n## Evaluation Notes\n\n- Inherits the LiveCodeBench prompt, date filter, extraction and code execution grader\n- Requires a local reference_path panel; benchmark downloads use standard loaders\n- Standard subset pass@k remains available alongside population-weighted accuracy\n- Use sandbox execution for generated code as in the full benchmark\n- Smaller ratios are experimental; no new GO/NO GO guarantee is certified\n\n\n## Properties\n\n| Property | Value |\n|----------|-------|\n| **Benchmark Name** | `live_code_bench_pruned` |\n| **Dataset ID** | [evalscope/livecodebench_code_generation_lite_parquet](https://modelscope.cn/datasets/evalscope/livecodebench_code_generation_lite_parquet/summary) |\n| **Paper** | N/A |\n| **Tags** | `Coding` |\n| **Metrics** | `accuracy` |\n| **Default Shots** | 0-shot |\n| **Evaluation Split** | `test` |\n| **Aggregation** | `mean_and_pass_at_k` |\n\n\n## Data Statistics\n\n*Statistics not available.*\n\n## Sample Example\n\n*Sample example not available.*\n\n## Prompt Template\n\n**System Prompt:**\n```text\nYou are an expert Python programmer. You will be given a question (problem specification) and will generate a correct Python program that matches the specification and passes all tests. You will NOT return anything except for the program.\n```\n\n**Prompt Template:**\n```text\n### Question:\n{question_content}\n\n{format_prompt} ### Answer: (use the provided format with backticks)\n\n\n```\n\n## Extra Parameters\n\n| Parameter | Type | Default | Description |\n|-----------|------|---------|-------------|\n| `start_date` | `str | null` | `None` | Filter problems starting from this date (YYYY-MM-DD). Null keeps all. |\n| `end_date` | `str | null` | `None` | Filter problems up to this date (YYYY-MM-DD). Null keeps all. |\n| `debug` | `bool` | `False` | Enable verbose debug logging and bypass certain safety checks. |\n| `pruning_strategy` | `str` | `difficulty_stratified` | Historical stratification policy; comparison baselines are rejected. |\n| `prune_ratio` | `float` | `1.0` | Fraction retained in (0, 1]; 1.0 is the defended fallback. |\n| `reference_path` | `str` | `` | Local frozen reference panel JSON, schema version 1. |\n| `excluded_reference_models` | `list[str]` | `[]` | Additional reference model names to exclude (for pair holdouts). |\n\n## Sandbox Configuration\n\nThis benchmark requires a sandbox environment for code execution.\n\n```json\n{\n  \"image\": \"python:3.11-slim\",\n  \"tools_config\": {\n    \"shell_executor\": {},\n    \"python_executor\": {}\n  }\n}\n```\n\n## Usage\n\n### Using CLI\n\n```bash\nevalscope eval \\\n    --model YOUR_MODEL \\\n    --api-url OPENAI_API_COMPAT_URL \\\n    --api-key EMPTY_TOKEN \\\n    --datasets live_code_bench_pruned \\\n    --sandbox '{\"enabled\": true}' \\\n    --limit 10  # Remove this line for formal evaluation\n```\n\n### Using Python\n\n```python\nfrom evalscope import run_task\nfrom evalscope.config import TaskConfig\n\ntask_cfg = TaskConfig(\n    model='YOUR_MODEL',\n    api_url='OPENAI_API_COMPAT_URL',\n    api_key='EMPTY_TOKEN',\n    datasets=['live_code_bench_pruned'],\n    sandbox={'enabled': True},\n    dataset_args={\n        'live_code_bench_pruned': {\n            # extra_params: {}  # uses default extra parameters\n        }\n    },\n    limit=10,  # Remove this line for formal evaluation\n)\n\nrun_task(task_cfg=task_cfg)\n```\n\n\n",
+    "zh": "",
+    "content_hash": "d84905661f50e74ad0f6742c1d30a542",
+    "needs_translation": true
+  },
+  "updated_at": "2026-10-22T10:44:06.571424"
+}

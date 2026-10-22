@@ -1,0 +1,22 @@
+{
+  "model": "coding-pruning-mock",
+  "eval_type": "mock_llm",
+  "datasets": [
+    "live_code_bench_pruned"
+  ],
+  "seed": 42,
+  "dataset_args": {
+    "live_code_bench_pruned": {
+      "local_path": "examples/live_code_bench_pruned/data/questions.jsonl",
+      "subset_list": [
+        "fixture"
+      ],
+      "extra_params": {
+        "reference_path": "examples/live_code_bench_pruned/data/references.json",
+        "pruning_strategy": "difficulty_stratified",
+        "prune_ratio": 0.5
+      }
+    }
+  },
+  "work_dir": "outputs/live-code-bench-pruned-smoke"
+}

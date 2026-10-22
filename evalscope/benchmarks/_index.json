@@ -132,6 +132,7 @@
  "kina": "evalscope.benchmarks.kina.kina_adapter",
  "librispeech": "evalscope.benchmarks.librispeech.librispeech_adapter",
  "live_code_bench": "evalscope.benchmarks.live_code_bench.live_code_bench_adapter",
+ "live_code_bench_pruned": "evalscope.benchmarks.live_code_bench_pruned.live_code_bench_pruned_adapter",
  "locomo": "evalscope.benchmarks.locomo.locomo_adapter",
  "logi_qa": "evalscope.benchmarks.logi_qa.logi_qa_adapter",
  "logic_vista": "evalscope.benchmarks.logic_vista.logic_vista_adapter",

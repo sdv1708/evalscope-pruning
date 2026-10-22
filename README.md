@@ -4,6 +4,10 @@
 > integration, setup, provenance, limitations and verification. Original upstream
 > documentation follows.
 
+> **Issue #19:** [Native LiveCodeBench pruning](LIVE_CODE_BENCH_PRUNED.md) adds
+> `live_code_bench_pruned`, exact historical selection, weighted reporting,
+> an offline example and the live endpoint run instructions.
+
 <p align="center">
     <br>
     <img src="docs/en/_static/images/evalscope_logo.png"/>

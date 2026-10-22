@@ -1,0 +1,240 @@
+"""Prune before inference while inheriting LiveCodeBench prompting and grading."""
+
+import hashlib
+import math
+from collections import defaultdict
+from dataclasses import replace
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple, Type
+
+from evalscope.api.dataset import DataLoader, Dataset, DatasetDict, MemoryDataset, Sample
+from evalscope.api.dataset.loader import repeat_samples
+from evalscope.api.metric import AggScore, SampleScore
+from evalscope.api.metric.semantics import MetricSelector
+from evalscope.api.registry import BENCHMARK_REGISTRY, register_benchmark
+from evalscope.benchmarks.live_code_bench.live_code_bench_adapter import LiveCodeBenchAdapter
+
+from .selection import PruningConfig, SelectedTask, load_reference_panel, question_fingerprint, select_tasks
+
+DESCRIPTION = """
+## Overview
+
+Historical reference-stratified LiveCodeBench selection inside the native evaluation
+pipeline. Full retention is the default: the reference analysis did not validate a
+smaller operating point under its conservative decision policy.
+
+## Task Description
+
+- **Task Type**: Competitive programming / code generation
+- **Input**: Original LiveCodeBench problem and starter code
+- **Output**: Python solution using the standard LiveCodeBench format
+- **Domain**: Coding capability screening
+
+## Key Features
+
+- Configurable difficulty_stratified or response_stratified historical selection
+- prune_ratio is a retained fraction in (0, 1], rounded up
+- Frozen question fingerprints bind analysis indices to source problems
+- Evaluated model grades are excluded; selection precedes inference and repeats
+
+## Evaluation Notes
+
+- Inherits the LiveCodeBench prompt, date filter, extraction and code execution grader
+- Requires a local reference_path panel; benchmark downloads use standard loaders
+- Standard subset pass@k remains available alongside population-weighted accuracy
+- Use sandbox execution for generated code as in the full benchmark
+- Smaller ratios are experimental; no new GO/NO GO guarantee is certified
+"""
+
+_BASE = BENCHMARK_REGISTRY['live_code_bench']
+_EXTRA = {
+    'pruning_strategy': {
+        'type': 'str',
+        'description': 'Historical stratification policy; comparison baselines are rejected.',
+        'value': 'difficulty_stratified',
+    },
+    'prune_ratio': {
+        'type': 'float',
+        'description': 'Fraction retained in (0, 1]; 1.0 is the defended fallback.',
+        'value': 1.0,
+    },
+    'reference_path': {
+        'type': 'str',
+        'description': 'Local frozen reference panel JSON, schema version 1.',
+        'value': '',
+    },
+    'excluded_reference_models': {
+        'type': 'list[str]',
+        'description': 'Additional reference model names to exclude (for pair holdouts).',
+        'value': [],
+    },
+}
+
+
+@register_benchmark(
+    replace(
+        _BASE,
+        name='live_code_bench_pruned',
+        pretty_name='LiveCodeBench (Reference Pruned)',
+        subset_list=['release_v5'],
+        description=DESCRIPTION,
+        evaluation_version='v1.0',
+        hf_dataset_revision='e70df9620dd54c12afac5e2881355de6f9ece2e9',
+        extra_params={**_BASE.extra_params, **_EXTRA},
+        primary_metric=MetricSelector(name='accuracy', aggregation='weighted_mean', dimensions={'scope': 'population'}),
+    )
+)
+class LiveCodeBenchPrunedAdapter(LiveCodeBenchAdapter):
+    """Keep standard benchmark semantics and validate pruning at configuration time."""
+
+    aggregate_empty_scores = True
+
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self.pruning_config = PruningConfig.model_validate({key: (self.extra_params or {})[key] for key in _EXTRA})
+        self.save_metadata = True
+        if self._task_config is not None and (self.seed is None or isinstance(self.seed, bool)):
+            raise ValueError('Pruning requires an integer seed for reproducible selection.')
+        if self._task_config is not None and self.limit is not None:
+            raise ValueError(
+                'live_code_bench_pruned does not support limit; use prune_ratio to preserve population weights.'
+            )
+
+    def load_from_disk(self, use_local_loader: bool = True) -> Tuple[DatasetDict, Optional[DatasetDict]]:
+        """Support ordinary local JSONL/CSV/parquet mirrors through the native loader."""
+        return super().load_from_disk(use_local_loader=use_local_loader)
+
+    def record_to_sample(self, record: Dict[str, Any]) -> Sample:
+        """Preserve original conversion and add a content-based question identity."""
+        fingerprint = question_fingerprint(record['question_content'])
+        sample = super().record_to_sample(record)
+        sample.metadata['question_sha256'] = fingerprint
+        return sample
+
+    def load_subset(self, subset: str, data_loader: Type[DataLoader]) -> Dataset:
+        """Match the frozen population, select, then apply framework shuffle and repeats."""
+        if self._task_config is None:
+            raise ValueError('Loading live_code_bench_pruned requires a TaskConfig.')
+        panel = load_reference_panel(self.pruning_config.reference_path)
+        model = self._task_config.model
+        model_name = model if isinstance(model, str) else getattr(model, 'name', '')
+        excluded = {name for name in (model_name, self._task_config.model_id) if isinstance(name, str) and name}
+        seed = self.seed
+        assert isinstance(seed, int)
+        selected = select_tasks(panel, self.pruning_config, seed=seed, excluded_models=excluded)
+        population_config = self._task_config.model_copy(update={'repeats': 1})
+        with (
+            self._temporary_attribute('_task_config', population_config),
+            self._temporary_attribute('shuffle', False),
+        ):
+            population = super().load_subset(subset, data_loader)
+        wanted = {task.question_sha256 for task in panel.tasks}
+        matched: Dict[str, Sample] = {}
+        for sample in population:
+            fingerprint = sample.metadata['question_sha256']
+            if fingerprint not in wanted:
+                continue
+            if fingerprint in matched:
+                raise ValueError(f'Duplicate source question fingerprint in subset {subset!r}: {fingerprint}.')
+            matched[fingerprint] = sample
+        if missing := wanted - matched.keys():
+            raise ValueError(
+                f'Reference population mismatch: {len(missing)} questions missing from subset {subset!r}. '
+                'Check source version and date filters; row positions cannot substitute for identity.'
+            )
+        reference_models = sorted(
+            set(panel.tasks[0].scores) - excluded - set(self.pruning_config.excluded_reference_models)
+        )
+        panel_sha256 = hashlib.sha256(Path(self.pruning_config.reference_path).read_bytes()).hexdigest()
+        samples = []
+        for task in selected:
+            sample = matched[task.question_sha256]
+            sample.metadata['pruning'] = {
+                **task.model_dump(),
+                'strategy': self.pruning_config.pruning_strategy,
+                'keep_ratio': self.pruning_config.prune_ratio,
+                'seed': self.seed,
+                'population_size': len(panel.tasks),
+                'selected_size': len(selected),
+                'reference_models': reference_models,
+                'reference_panel_sha256': panel_sha256,
+            }
+            samples.append(sample)
+        result = MemoryDataset(samples, name=population.name, location=population.location)
+        if self.shuffle:
+            result.shuffle(seed=self.seed)
+        result = MemoryDataset(
+            repeat_samples(list(result), self.repeats),
+            name=population.name,
+            location=population.location,
+            shuffled=self.shuffle,
+        )
+        result.reindex(group_size=self.repeats)
+        return result
+
+    def aggregate_scores(self, sample_scores: List[SampleScore]) -> List[AggScore]:
+        """Retain upstream subset metrics and add the design-weighted population mean.
+
+        Each question contributes its weight times its mean across repeated attempts.
+        Incomplete or unscored attempts fail closed instead of renormalizing a biased
+        surviving subset. This estimate has no customer-decision certification.
+        """
+        if not sample_scores:
+            raise ValueError('Incomplete pruning scores: no graded questions.')
+        sample_ids = [score.sample_id for score in sample_scores]
+        if len(set(sample_ids)) != len(sample_ids):
+            raise ValueError('Incomplete pruning scores: duplicate execution sample IDs.')
+        groups: Dict[int, List[SampleScore]] = defaultdict(list)
+        traces: Dict[int, SelectedTask] = {}
+        context: Optional[Dict[str, Any]] = None
+        context_keys = (
+            'selected_size',
+            'population_size',
+            'strategy',
+            'keep_ratio',
+            'seed',
+            'reference_models',
+            'reference_panel_sha256',
+        )
+        for score in sample_scores:
+            raw = (score.sample_metadata or {}).get('pruning')
+            if not isinstance(raw, dict):
+                raise ValueError('Incomplete pruning scores: missing selection metadata.')
+            trace = SelectedTask.model_validate(raw)
+            current = {key: raw[key] for key in context_keys}
+            if context is None:
+                context = current
+            if context != current or (trace.index in traces and traces[trace.index] != trace):
+                raise ValueError('Inconsistent pruning score provenance.')
+            if not score.score.status.is_usable or score.score.value.get('acc') not in (0, 1):
+                raise ValueError('Incomplete pruning scores: every planned attempt needs a binary acc grade.')
+            traces[trace.index] = trace
+            groups[trace.index].append(score)
+        assert context is not None
+        if len(groups) != context['selected_size'] or any(
+            len(attempts) != self.repeats for attempts in groups.values()
+        ):
+            raise ValueError('Incomplete pruning scores: missing questions or repeated attempts.')
+        for attempts in groups.values():
+            positions = [score.generation_index for score in attempts]
+            if any(position is not None for position in positions) and set(positions) != set(range(self.repeats)):
+                raise ValueError('Incomplete pruning scores: missing or duplicated attempt positions.')
+        if not math.isclose(math.fsum(trace.weight for trace in traces.values()), 1.0, abs_tol=1e-12):
+            raise ValueError('Incomplete pruning scores: population weights must sum to one.')
+        estimate = math.fsum(
+            traces[index].weight * math.fsum(float(score.score.value['acc']) for score in attempts) / len(attempts)
+            for index, attempts in groups.items()
+        )
+        aggregates = super().aggregate_scores(sample_scores)
+        aggregates.append(
+            AggScore(
+                score=estimate,
+                metric_name='accuracy',
+                aggregation='weighted_mean',
+                dimensions={'scope': 'population'},
+                num=len(groups),
+                ids=[score.sample_id for score in sample_scores if score.sample_id is not None],
+                metadata={**context, 'selected_indices': sorted(groups), 'decision_certified': False},
+            )
+        )
+        return aggregates
