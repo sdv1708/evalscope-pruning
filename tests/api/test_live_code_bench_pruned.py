@@ -16,6 +16,7 @@ from evalscope.api.metric import SampleScore, Score
 from evalscope.api.model import ModelOutput
 from evalscope.api.registry import get_benchmark
 from evalscope.config import TaskConfig
+from evalscope.models.mockllm import MockLLM
 
 
 def population(tmp_path: Path) -> tuple[Path, Path]:
@@ -119,6 +120,15 @@ def test_order_invariance_repeats_and_target_exclusion(tmp_path: Path) -> None:
     assert all(s.metadata['pruning']['reference_models'] == ['reference-b'] for s in second)
     assert list(second)[0] is not list(second)[1]
     assert config.repeats == 2
+
+
+def test_model_api_objects_exclude_underlying_target_with_a_custom_display_name(tmp_path: Path) -> None:
+    source, panel = population(tmp_path)
+    config = configuration(source, panel, prune_ratio=0.5)
+    config.model = MockLLM(model_name='reference-a')
+    config.model_id = 'custom-display'
+    samples = get_benchmark('live_code_bench_pruned', config).load_dataset()['fixture']
+    assert all(sample.metadata['pruning']['reference_models'] == ['reference-b'] for sample in samples)
 
 
 @pytest.mark.parametrize('case', ['duplicate_index', 'duplicate_hash', 'score', 'model', 'duplicate_key'])

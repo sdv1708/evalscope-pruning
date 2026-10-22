@@ -94,7 +94,7 @@ lexical ties. Inside each group the lowest SHA-256 priorities of
 `lcb-pruning-v1:{seed}:{index}` win. This exactly reproduces the independent
 analysis design. Target references are excluded before groups are constructed.
 
-Challenge data stays in the private challenge repository at
+Challenge reference data stays in the challenge repository at
 `task2/data/lcb-reference-panel.json`; this generic EvalScope repository includes
 only synthetic fixtures. The exporter recovers 315 questions from saved GPT-OSS
 Harmony prompt tokens, joins grades by index, and records six source-file hashes.
@@ -140,8 +140,9 @@ Change the ratio to `0.5` and the output directory for an experimental 158-quest
 run. The **1.0 default** is issue #17's defended fallback: 315 question-level
 generation requests at repeats=1, excluding transport retries. No compression
 savings are claimed there. Smaller ratios remain experimental; CLI availability
-does not certify a customer GO/NO GO decision. No model key or paid inference was
-used for this ticket. Fresh endpoint/sandbox behavior remains to be measured live.
+does not certify a customer GO/NO GO decision. No paid benchmark inference was
+performed; the only paid calls translated documentation. Fresh endpoint/sandbox
+behavior remains to be measured live.
 
 Saved-run comparison belongs to issue #21. Compare the same frozen population
 and generation/grading settings: a default full `live_code_bench` run over 880
@@ -156,7 +157,8 @@ rows is not the recorded 315-row reference.
 - Challenge `task2/tools/audit_evalscope_lcb.py`: 1,200 native-loader parity cases and historical grade replay
 - Challenge `task2/tools/verify_lcb_source.py`: optional public-source identity verification
 
-Discovery index and docs are generated with the upstream CLI. Metadata-only
-generation avoids hidden-test downloads for documentation. The Chinese page uses
-the generator's English fallback; no translation credential was used. See
+Discovery index and docs are generated with upstream tools. The statistics pass
+cannot load a default population without a user reference panel, so unavailable
+statistics are preserved instead of publishing a false zero. Chinese documentation
+was translated with the user-authorized OpenAI key through the upstream APIs. See
 [VALIDATION_ISSUE_19.md](VALIDATION_ISSUE_19.md) for measured checks.

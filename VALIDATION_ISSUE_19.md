@@ -10,7 +10,7 @@ Windows sandbox temp directories were unusable, so pytest uses `.pytest-tmp/`.
 
 | Final check | Result |
 | --- | --- |
-| Complete feature suite and relevant upstream contracts, including CI-lite | **122 passed**, including 31 feature tests |
+| Complete feature suite and relevant upstream contracts, including CI-lite | **123 passed**, including 32 feature tests |
 | Challenge Task 2 full suite | **129 passed** |
 | Independent registry/loader parity and historical replay | **1,200 cases passed** |
 | Public source identity verification | **315/315 unique matches**, 880 source rows |
@@ -72,6 +72,21 @@ process capability; no model credentials are needed.
 
 Commands and interpretation are in [LIVE_CODE_BENCH_PRUNED.md](LIVE_CODE_BENCH_PRUNED.md).
 Generated discovery, metadata and benchmark pages use upstream generators. The
-Chinese page uses their English fallback, and full hidden-test dataset statistics
-are not downloaded solely for documentation. No paid inference, live provider
-benchmark, Docker sandbox run or fresh-model accuracy certification is claimed.
+required statistics pass was attempted. Its default loader cannot resolve an
+unspecified user-supplied reference panel; upstream catches that error and produces
+a zero-row cache. That misleading zero was withheld, preserving the generated
+metadata cache. Population statistics depend on the configured panel.
+
+Chinese documentation was translated through upstream translation/document APIs,
+with a one-off OpenAI provider/model override (`gpt-4.1-mini`) instead of changing
+the core DashScope/Qwen translator. The user's key authorized two documentation
+calls: the initial translation and regeneration after a usage-template correction.
+No benchmark inference used that key; temporary ignored credentials were removed.
+Generic generated Usage templates are prominently corrected in the adapter's
+description: supply `reference_path`, omit `limit`, or run the bundled JSON task.
+
+Review found and fixed one leakage edge case for `ModelAPI` objects with a custom
+display ID: underlying `model_name` must be excluded just like `Model.name` and
+string names. The regression failed before the fix, then passed, and the final
+123-test suite includes it. No live provider benchmark, Docker sandbox run or
+fresh-model accuracy certification is claimed.

@@ -44,6 +44,17 @@ smaller operating point under its conservative decision policy.
 - Standard subset pass@k remains available alongside population-weighted accuracy
 - Use sandbox execution for generated code as in the full benchmark
 - Smaller ratios are experimental; no new GO/NO GO guarantee is certified
+- **Configuration required:** the generic Usage templates generated below are not
+  runnable unchanged for this benchmark. Supply `extra_params.reference_path` and
+  remove `--limit` / `limit=10`; use `prune_ratio` to control the retained size.
+  For a runnable offline example, from the repository root run:
+
+```python
+from evalscope import run_task
+run_task('examples/live_code_bench_pruned/task.json')
+```
+
+See `LIVE_CODE_BENCH_PRUNED.md` for the full reference-panel schema and live command.
 """
 
 _BASE = BENCHMARK_REGISTRY['live_code_bench']
@@ -117,7 +128,7 @@ class LiveCodeBenchPrunedAdapter(LiveCodeBenchAdapter):
             raise ValueError('Loading live_code_bench_pruned requires a TaskConfig.')
         panel = load_reference_panel(self.pruning_config.reference_path)
         model = self._task_config.model
-        model_name = model if isinstance(model, str) else getattr(model, 'name', '')
+        model_name = model if isinstance(model, str) else getattr(model, 'name', getattr(model, 'model_name', ''))
         excluded = {name for name in (model_name, self._task_config.model_id) if isinstance(name, str) and name}
         seed = self.seed
         assert isinstance(seed, int)
