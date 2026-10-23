@@ -5,6 +5,7 @@
 | 数据集名称 | 标准名称 | 任务类别 |
 |------------|----------|----------|
 | `aa_lcr` | [AA-LCR](../../benchmarks/aa_lcr.md) | `Knowledge`, `LongContext`, `Reasoning` |
+| `aa_lcr_pruned` | [AA-LCR (Reference Pruned)](../../benchmarks/aa_lcr_pruned.md) | `Knowledge`, `LongContext`, `Reasoning` |
 | `agieval` | [AGIEval](../../benchmarks/agieval.md) | `Knowledge`, `MCQ`, `Math`, `Reasoning` |
 | `aime24` | [AIME-2024](../../benchmarks/aime24.md) | `Math`, `Reasoning` |
 | `aime25` | [AIME-2025](../../benchmarks/aime25.md) | `Math`, `Reasoning` |
@@ -169,6 +170,7 @@
 :maxdepth: 1
 
 ../../benchmarks/aa_lcr.md
+../../benchmarks/aa_lcr_pruned.md
 ../../benchmarks/agieval.md
 ../../benchmarks/aime24.md
 ../../benchmarks/aime25.md
