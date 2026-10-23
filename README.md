@@ -409,3 +409,7 @@ If you use EvalScope in your research, please cite our work:
     url={https://github.com/modelscope/evalscope}
 }
 ```
+# Native full-versus-pruned comparison
+
+Issue #21 adds `python -m evalscope_ext.tools.compare_runs --full results_full --pruned results_pruned`.
+See [the reproducible workflow and evidence contract](COMPARE_RUNS.md).
