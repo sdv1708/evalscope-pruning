@@ -10,6 +10,7 @@ import sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from threading import Thread
+from typing import Any
 
 
 class FixtureEndpoint(BaseHTTPRequestHandler):
@@ -37,9 +38,10 @@ def main() -> None:
     """Dispatch a genuine CLI evaluation with an explicit local judge configuration."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--work-dir', type=Path, default=Path('outputs/aa-lcr-pruned-smoke'))
+    parser.add_argument('--compare', action='store_true', help='Run a census and 25% subset, then compare saved results.')
     args = parser.parse_args()
     data = Path(__file__).resolve().parent / 'data'
-    dataset_args = {'aa_lcr_pruned': {
+    dataset_args: dict[str, Any] = {'aa_lcr_pruned': {
         'local_path': str(data/'questions.jsonl'), 'subset_list': ['fixture'],
         'extra_params': {'reference_path': str(data/'references.json'), 'text_dir': str(data/'texts'),
                          'pruning_strategy': 'metadata_stratified', 'prune_ratio': 0.25},
@@ -52,12 +54,25 @@ def main() -> None:
         'model_id': 'fixture-judge', 'eval_type': 'openai_api', 'api_url': url, 'api_key': 'fixture-only',
     }]}
     try:
-        result = subprocess.run([
+        command = [
             sys.executable, '-m', 'evalscope.cli.cli', 'eval', '--model', 'unseen', '--eval-type', 'openai_api',
             '--api-url', url, '--api-key', 'fixture-only', '--datasets', 'aa_lcr_pruned',
-            '--dataset-args', json.dumps(dataset_args), '--judge', json.dumps(judge),
-            '--eval-batch-size', '1', '--work-dir', str(args.work_dir), '--no-timestamp',
-        ], timeout=120)
+            '--judge', json.dumps(judge), '--eval-batch-size', '1', '--no-timestamp',
+        ]
+        ratios = [('full', 1.0), ('pruned', 0.25)] if args.compare else [('', 0.25)]
+        for label, ratio in ratios:
+            dataset_args['aa_lcr_pruned']['extra_params']['prune_ratio'] = ratio
+            result = subprocess.run(command + [
+                '--dataset-args', json.dumps(dataset_args), '--work-dir', str(args.work_dir / label),
+            ], timeout=120)
+            if result.returncode:
+                break
+        if args.compare and result.returncode == 0:
+            result = subprocess.run([
+                sys.executable, '-m', 'evalscope_ext.tools.compare_runs',
+                '--full', str(args.work_dir / 'full'), '--pruned', str(args.work_dir / 'pruned'),
+                '--threshold', '0.8',
+            ], timeout=30)
     finally:
         server.shutdown()
         server.server_close()
