@@ -119,6 +119,22 @@ def _ordering(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return result
 
 
+def _validate_ordering_runs(runs: dict[tuple[str, str, str], SavedRun]) -> None:
+    groups: dict[tuple[str, str], SavedRun] = {}
+    for run in runs.values():
+        group = (run.benchmark, run.subset)
+        previous = groups.setdefault(group, run)
+        protocol = {key: value for key, value in run.settings.items() if key not in {'model', 'model_args'}}
+        previous_protocol = {
+            key: value for key, value in previous.settings.items() if key not in {'model', 'model_args'}
+        }
+        if run.questions.keys() != previous.questions.keys() or protocol != previous_protocol:
+            raise ValueError(
+                'Incompatible model ordering: full runs must share the same complete input population '
+                'and generation/judge/scoring protocol. Compare these models separately.'
+            )
+
+
 def main() -> int:
     """Write one JSON document to stdout, or an actionable error to stderr (exit 2)."""
     parser = argparse.ArgumentParser(description=__doc__)
@@ -137,6 +153,7 @@ def main() -> int:
                 f'full-only={sorted(full.keys() - pruned.keys())}, '
                 f'pruned-only={sorted(pruned.keys() - full.keys())}.'
             )
+        _validate_ordering_runs(full)
         rows = [compare(full[key], pruned[key], args.threshold) for key in sorted(full)]
         warnings = [
             'Observed saved-run fidelity is retrospective; it does not validate transfer to an unseen model.',

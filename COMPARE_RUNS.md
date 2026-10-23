@@ -77,7 +77,7 @@ The loader checks report/review counts and scores, unique execution IDs, complet
 repetition positions, binary successful grades, selection identity, covered strata,
 population sizes, retained counts, ratio and weights. Failed/degraded grades are
 rejected rather than converted to zero. Each retained question must have identical
-input messages and target in the full run; generated answers and ephemeral message
+input messages, target and coding grading test cases in the full run; generated answers and ephemeral message
 IDs do not define input identity. Original panel identity and stratum metadata must
 also match when both sides carry traces. Missing evidence cannot be silently dropped.
 
@@ -99,7 +99,7 @@ For stratum h, population size `N_h`, retained size `n_h`, total population N:
 each retained question has weight `N_h/(N*n_h)`. Average its repeated binary
 attempts first, then sum `weight * question_mean`. This is mean-attempt accuracy,
 not pass@k for k>1. The command recomputes scores from reviews at full precision
-and tolerates the framework's four-decimal rounding in saved reports.
+and reconciles the framework's four-decimal subset/category/metric rounding in saved reports.
 
 Output includes unique sample and attempt counts, retained fraction, full and
 weighted pruned scores, raw subset mean, signed/absolute difference in percentage
@@ -125,7 +125,9 @@ To inspect ordering, provide one exact run per model:
 python -m evalscope_ext.tools.compare_runs --full full_model_a full_model_b --pruned pruned_model_a pruned_model_b
 ```
 
-Keys must match exactly across sides. Duplicate keys fail. Pairwise model order
+Keys must match exactly across sides. Duplicate keys fail. Across models, full
+input populations and generation/judge/scoring protocols must match before ranking.
+Pairwise model order
 is reported separately within each benchmark/subset, with ties distinct from
 strict order (absolute tie tolerance 1e-12). One model cannot establish ordering.
 Ordering is retrospective and may use model-specific selections; it does not

@@ -161,7 +161,10 @@ def _input_key(row: dict[str, Any], path: Path) -> str:
             messages.append({'role': message['role'], 'content': message['content']})
     if not messages or not any(m['role'] == 'user' for m in messages):
         raise ValueError(f'{path}: missing input messages; prompt identity is required.')
-    encoded = json.dumps([messages, row.get('target')], sort_keys=True, ensure_ascii=False, allow_nan=False)
+    grading_cases = (row['sample_score'].get('sample_metadata') or {}).get('evaluation_sample')
+    encoded = json.dumps(
+        [messages, row.get('target'), grading_cases], sort_keys=True, ensure_ascii=False, allow_nan=False
+    )
     return hashlib.sha256(encoded.encode()).hexdigest()
 
 
@@ -269,6 +272,18 @@ def _validate_design(questions: dict[str, Question], path: Path) -> int:
     return int(population)
 
 
+def _rounded_metric_score(metric: dict[str, Any]) -> float:
+    """Mirror Native report rounding at subset, category and metric boundaries."""
+    categories = []
+    for category in metric['categories']:
+        subsets = [subset for subset in category['subsets'] if not subset.get('is_aggregate', False)]
+        count = sum(subset['num'] for subset in subsets)
+        if count:
+            score = round(sum(subset['score'] * subset['num'] for subset in subsets) / count, 4)
+            categories.append((score, count))
+    return round(sum(score * count for score, count in categories) / sum(count for _, count in categories), 4)
+
+
 def load_runs(root: Path) -> dict[tuple[str, str, str], SavedRun]:
     """Read one exact run root, rejecting ambiguity and mismatched report/review evidence."""
     root = root.resolve()
@@ -323,8 +338,7 @@ def load_runs(root: Path) -> dict[tuple[str, str, str], SavedRun]:
         if not subsets or len({s['name'] for s in subsets}) != len(subsets):
             raise ValueError(f'{path}: missing or duplicate scored subsets.')
         total_attempts = 0
-        total_samples = 0
-        total_score = 0.0
+        total_metric_count = 0
         for subset in subsets:
             subset_name = subset['name']
             if not isinstance(subset_name, str) or '/' in subset_name or '\\' in subset_name or '..' in subset_name:
@@ -342,7 +356,9 @@ def load_runs(root: Path) -> dict[tuple[str, str, str], SavedRun]:
                 sources=[path, review_path, config_path],
                 legacy_full=not pruned,
             )
-            if _count(subset['num'], str(path)) != run.samples:
+            # Native Mean counts attempts; the reference weighted mean and LCB pass@1 count questions.
+            metric_count = attempts if name == 'aa_lcr' else run.samples
+            if _count(subset['num'], str(path)) != metric_count:
                 raise ValueError(f'{path}: report/review sample counts differ for {subset_name}.')
             if abs(_score(subset['score'], str(path)) - run.score) > 0.000051:
                 raise ValueError(f'{path}: report/review weighted score mismatch for {subset_name}.')
@@ -351,11 +367,10 @@ def load_runs(root: Path) -> dict[tuple[str, str, str], SavedRun]:
                 raise ValueError(f'{root}: duplicate model/benchmark/subset reports.')
             runs[key] = run
             total_attempts += attempts
-            total_samples += run.samples
-            total_score += run.score * run.samples
+            total_metric_count += metric_count
         if (
-            _count(metric['num'], str(path)) != total_samples
-            or abs(_score(metric['score'], str(path)) - total_score / total_samples) > 0.000051
+            _count(metric['num'], str(path)) != total_metric_count
+            or abs(_score(metric['score'], str(path)) - _rounded_metric_score(metric)) > 1e-12
         ):
             raise ValueError(f'{path}: aggregate metric disagrees with subset evidence.')
         if execution['requested'] != total_attempts:

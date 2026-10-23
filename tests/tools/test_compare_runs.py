@@ -219,7 +219,8 @@ def test_invalid_threshold_is_rejected(tmp_path: Path, threshold: str) -> None:
     assert 'threshold' in result.stderr
 
 
-def test_repeated_attempts_do_not_inflate_unique_question_count(tmp_path: Path) -> None:
+@pytest.mark.parametrize('base_aa_lcr', [False, True])
+def test_repeated_attempts_do_not_inflate_unique_question_count(tmp_path: Path, base_aa_lcr: bool) -> None:
     full = write_run(tmp_path / 'full', [1, 0])
     pruned = write_run(tmp_path / 'pruned', [1, 0])
     for root in (full, pruned):
@@ -242,6 +243,27 @@ def test_repeated_attempts_do_not_inflate_unique_question_count(tmp_path: Path) 
         report = json.loads(report_path.read_text())
         report['execution_summary'].update(requested=4, succeeded=4)
         report_path.write_text(json.dumps(report), encoding='utf-8')
+    if base_aa_lcr:
+        for root in (full, pruned):
+            name = 'aa_lcr' if root == full else 'aa_lcr_pruned'
+            for path in list(root.rglob('*')):
+                if path.suffix not in ('.yaml', '.json', '.jsonl'):
+                    continue
+                content = path.read_text().replace('live_code_bench_pruned', name)
+                if path.suffix == '.json' and root == full:
+                    report = json.loads(content)
+                    report['metrics'][0]['identity'] = {'name': 'accuracy', 'aggregation': 'mean', 'dimensions': {}}
+                    report['metrics'][0]['num'] = 4
+                    report['metrics'][0]['categories'][0]['subsets'][0]['num'] = 4
+                    content = json.dumps(report)
+                if path.suffix == '.jsonl' and root == full:
+                    rows = [json.loads(line) for line in content.splitlines()]
+                    for row in rows:
+                        row['sample_score']['sample_metadata'] = {}
+                    content = '\n'.join(map(json.dumps, rows))
+                path.write_text(content, encoding='utf-8')
+                if 'live_code_bench_pruned' in path.name:
+                    path.rename(path.with_name(path.name.replace('live_code_bench_pruned', name)))
     result = invoke(full, pruned)
     assert result.returncode == 0, result.stderr
     row = json.loads(result.stdout)['comparisons'][0]
@@ -249,7 +271,33 @@ def test_repeated_attempts_do_not_inflate_unique_question_count(tmp_path: Path) 
     assert row['full_attempts'] == row['pruned_attempts'] == 4
 
 
-def test_ordering_uses_multiple_run_roots_and_preserves_ties(tmp_path: Path) -> None:
+def test_native_multi_subset_rounding_keeps_exact_comparison_scores(tmp_path: Path) -> None:
+    full = write_run(tmp_path / 'full', [0, 0, 0])
+    pruned = write_run(tmp_path / 'pruned', [0, 0, 0])
+    other = write_run(tmp_path / 'other', [1, 0, 0])
+    for root in (full, pruned):
+        review = root / 'reviews/candidate/live_code_bench_pruned_other.jsonl'
+        review.write_bytes((other / 'reviews/candidate/live_code_bench_pruned_test.jsonl').read_bytes())
+        config_path = root / 'configs/task_config.yaml'
+        config = yaml.safe_load(config_path.read_text())
+        config['resolved_benchmarks']['live_code_bench_pruned']['subset_list'] = ['test', 'other']
+        config_path.write_text(yaml.safe_dump(config), encoding='utf-8')
+        report_path = root / 'reports/candidate/live_code_bench_pruned.json'
+        report = json.loads(report_path.read_text())
+        metric = report['metrics'][0]
+        metric['categories'][0]['subsets'].append({'name': 'other', 'num': 3, 'score': 0.3333})
+        metric.update(num=6, score=0.1666)
+        report['execution_summary'].update(requested=6, succeeded=6)
+        report_path.write_text(json.dumps(report), encoding='utf-8')
+    result = invoke(full, pruned)
+    assert result.returncode == 0, result.stderr
+    rows = json.loads(result.stdout)['comparisons']
+    assert rows[0]['full_score'] == pytest.approx(1 / 3)
+    assert rows[1]['full_score'] == 0
+
+
+@pytest.mark.parametrize('different', ['', 'population', 'judge'])
+def test_ordering_uses_multiple_run_roots_and_preserves_ties(tmp_path: Path, different: str) -> None:
     full_a = write_run(tmp_path / 'full-a', [1, 0])
     pruned_a = write_run(tmp_path / 'pruned-a', [1, 0])
     full_b = write_run(tmp_path / 'full-b', [1, 1])
@@ -265,13 +313,40 @@ def test_ordering_uses_multiple_run_roots_and_preserves_ties(tmp_path: Path) -> 
         report = json.loads(report_path.read_text())
         report['model_name'] = 'second'
         report_path.write_text(json.dumps(report), encoding='utf-8')
+        if different == 'population':
+            review = root / 'reviews/second/live_code_bench_pruned_test.jsonl'
+            rows = [json.loads(line) for line in review.read_text().splitlines()]
+            rows[0]['messages'][0]['content'] = 'different pool question'
+            review.write_text('\n'.join(map(json.dumps, rows)), encoding='utf-8')
+        if different == 'judge':
+            config['judge'] = {'strategy': 'different'}
+            config_path.write_text(yaml.safe_dump(config), encoding='utf-8')
     result = invoke(full_a, pruned_a, '--full', str(full_a), str(full_b),
                     '--pruned', str(pruned_a), str(pruned_b))
+    if different:
+        assert result.returncode == 2
+        assert 'ordering' in result.stderr.lower()
+        assert not result.stdout
+        return
     assert result.returncode == 0, result.stderr
     pair = json.loads(result.stdout)['ordering'][0]
     assert pair['full_difference_pp'] == -50
     assert pair['pruned_difference_pp'] == 0
     assert pair['ordering_preserved'] is False
+
+
+def test_changed_coding_grading_cases_are_incompatible(tmp_path: Path) -> None:
+    full = write_run(tmp_path / 'full', [1, 0])
+    pruned = write_run(tmp_path / 'pruned', [1, 0])
+    for root in (full, pruned):
+        review = root / 'reviews/candidate/live_code_bench_pruned_test.jsonl'
+        rows = [json.loads(line) for line in review.read_text().splitlines()]
+        for row in rows:
+            row['sample_score']['sample_metadata']['evaluation_sample'] = 'tests-a' if root == full else 'tests-b'
+        review.write_text('\n'.join(map(json.dumps, rows)), encoding='utf-8')
+    result = invoke(full, pruned)
+    assert result.returncode == 2
+    assert 'not found' in result.stderr
 
 
 def test_unpruned_full_adapter_matches_by_input_not_row_position(tmp_path: Path) -> None:
