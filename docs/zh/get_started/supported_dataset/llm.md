@@ -93,6 +93,7 @@
 | `jnlpba_rare` | [JNLPBA-Rare](../../benchmarks/jnlpba_rare.md) | `Knowledge`, `NER` |
 | `kina` | [KINA](../../benchmarks/kina.md) | `Knowledge`, `MCQ` |
 | `live_code_bench` | [Live-Code-Bench](../../benchmarks/live_code_bench.md) | `Coding` |
+| `live_code_bench_pruned` | [LiveCodeBench (Reference Pruned)](../../benchmarks/live_code_bench_pruned.md) | `Coding` |
 | `locomo` | [LoCoMo](../../benchmarks/locomo.md) | `LongContext`, `MultiTurn`, `QA` |
 | `logi_qa` | [LogiQA](../../benchmarks/logi_qa.md) | `MCQ`, `Reasoning` |
 | `longbench_v2` | [LongBench-v2](../../benchmarks/longbench_v2.md) | `LongContext`, `MCQ`, `ReadingComprehension` |
@@ -133,6 +134,7 @@
 | `poly_math` | [PolyMath](../../benchmarks/poly_math.md) | `Math`, `MultiLingual`, `Reasoning` |
 | `prbench` | [PRBench](../../benchmarks/prbench.md) | `Knowledge`, `MultiTurn`, `QA`, `Reasoning` |
 | `process_bench` | [ProcessBench](../../benchmarks/process_bench.md) | `Math`, `Reasoning` |
+| `pruning_smoke` | [Pruning Smoke (Synthetic)](../../benchmarks/pruning_smoke.md) | `Custom`, `QA` |
 | `pubmedqa` | [PubMedQA](../../benchmarks/pubmedqa.md) | `Knowledge`, `Yes/No` |
 | `qasc` | [QASC](../../benchmarks/qasc.md) | `Knowledge`, `MCQ` |
 | `race` | [RACE](../../benchmarks/race.md) | `MCQ`, `Reasoning` |
@@ -255,6 +257,7 @@
 ../../benchmarks/jnlpba_rare.md
 ../../benchmarks/kina.md
 ../../benchmarks/live_code_bench.md
+../../benchmarks/live_code_bench_pruned.md
 ../../benchmarks/locomo.md
 ../../benchmarks/logi_qa.md
 ../../benchmarks/longbench_v2.md
@@ -295,6 +298,7 @@
 ../../benchmarks/poly_math.md
 ../../benchmarks/prbench.md
 ../../benchmarks/process_bench.md
+../../benchmarks/pruning_smoke.md
 ../../benchmarks/pubmedqa.md
 ../../benchmarks/qasc.md
 ../../benchmarks/race.md

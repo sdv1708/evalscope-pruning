@@ -39,6 +39,7 @@ pip-log.txt
 pip-delete-this-directory.txt
 
 # Unit test / coverage reports
+.pytest-tmp/
 htmlcov/
 .tox/
 .coverage
@@ -174,6 +175,7 @@ examples/api_test/
 /validation/math_verify/
 
 # Frontend (evalscope/web)
+.cache-tiktoken/
 node_modules/
 evalscope/web/dist/
 evalscope/web/.vite/

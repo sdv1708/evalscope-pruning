@@ -1,0 +1,86 @@
+{
+  "meta": {
+    "pretty_name": "LiveCodeBench (Reference Pruned)",
+    "dataset_id": "evalscope/livecodebench_code_generation_lite_parquet",
+    "paper_url": null,
+    "tags": [
+      "Coding"
+    ],
+    "metrics": [
+      "accuracy"
+    ],
+    "few_shot_num": 0,
+    "eval_split": "test",
+    "train_split": "",
+    "subset_list": [
+      "release_v5"
+    ],
+    "description": "\n## Overview\n\nHistorical reference-stratified LiveCodeBench selection inside the native evaluation\npipeline. Full retention is the default: the reference analysis did not validate a\nsmaller operating point under its conservative decision policy.\n\n## Task Description\n\n- **Task Type**: Competitive programming / code generation\n- **Input**: Original LiveCodeBench problem and starter code\n- **Output**: Python solution using the standard LiveCodeBench format\n- **Domain**: Coding capability screening\n\n## Key Features\n\n- Configurable difficulty_stratified or response_stratified historical selection\n- prune_ratio is a retained fraction in (0, 1], rounded up\n- Frozen question fingerprints bind analysis indices to source problems\n- Evaluated model grades are excluded; selection precedes inference and repeats\n\n## Evaluation Notes\n\n- Inherits the LiveCodeBench prompt, date filter, extraction and code execution grader\n- Requires a local reference_path panel; benchmark downloads use standard loaders\n- Standard subset pass@k remains available alongside population-weighted accuracy\n- Use sandbox execution for generated code as in the full benchmark\n- Smaller ratios are experimental; no new GO/NO GO guarantee is certified\n- **Configuration required:** the generic Usage templates generated below are not\n  runnable unchanged for this benchmark. Supply `extra_params.reference_path` and\n  remove `--limit` / `limit=10`; use `prune_ratio` to control the retained size.\n  For a runnable offline example, from the repository root run:\n\n```python\nfrom evalscope import run_task\nrun_task('examples/live_code_bench_pruned/task.json')\n```\n\nSee `LIVE_CODE_BENCH_PRUNED.md` for the full reference-panel schema and live command.\n",
+    "prompt_template": "### Question:\n{question_content}\n\n{format_prompt} ### Answer: (use the provided format with backticks)\n\n",
+    "system_prompt": "You are an expert Python programmer. You will be given a question (problem specification) and will generate a correct Python program that matches the specification and passes all tests. You will NOT return anything except for the program.",
+    "few_shot_prompt_template": "",
+    "aggregation": "mean_and_pass_at_k",
+    "extra_params": {
+      "start_date": {
+        "type": "str | null",
+        "description": "Filter problems starting from this date (YYYY-MM-DD). Null keeps all.",
+        "value": null
+      },
+      "end_date": {
+        "type": "str | null",
+        "description": "Filter problems up to this date (YYYY-MM-DD). Null keeps all.",
+        "value": null
+      },
+      "debug": {
+        "type": "bool",
+        "description": "Enable verbose debug logging and bypass certain safety checks.",
+        "value": false
+      },
+      "pruning_strategy": {
+        "type": "str",
+        "description": "Historical stratification policy; comparison baselines are rejected.",
+        "value": "difficulty_stratified"
+      },
+      "prune_ratio": {
+        "type": "float",
+        "description": "Fraction retained in (0, 1]; 1.0 is the defended fallback.",
+        "value": 1.0
+      },
+      "reference_path": {
+        "type": "str",
+        "description": "Local frozen reference panel JSON, schema version 1.",
+        "value": ""
+      },
+      "excluded_reference_models": {
+        "type": "list[str]",
+        "description": "Additional reference model names to exclude (for pair holdouts).",
+        "value": []
+      }
+    },
+    "sandbox_config": {
+      "image": "python:3.11-slim",
+      "tools_config": {
+        "shell_executor": {},
+        "python_executor": {}
+      }
+    },
+    "category": "llm",
+    "primary_metric": {
+      "name": "accuracy",
+      "aggregation": "weighted_mean",
+      "dimensions": {
+        "scope": "population"
+      }
+    }
+  },
+  "statistics": {},
+  "sample_example": {},
+  "readme": {
+    "en": "# LiveCodeBench (Reference Pruned)\n\n\n## Overview\n\nHistorical reference-stratified LiveCodeBench selection inside the native evaluation\npipeline. Full retention is the default: the reference analysis did not validate a\nsmaller operating point under its conservative decision policy.\n\n## Task Description\n\n- **Task Type**: Competitive programming / code generation\n- **Input**: Original LiveCodeBench problem and starter code\n- **Output**: Python solution using the standard LiveCodeBench format\n- **Domain**: Coding capability screening\n\n## Key Features\n\n- Configurable difficulty_stratified or response_stratified historical selection\n- prune_ratio is a retained fraction in (0, 1], rounded up\n- Frozen question fingerprints bind analysis indices to source problems\n- Evaluated model grades are excluded; selection precedes inference and repeats\n\n## Evaluation Notes\n\n- Inherits the LiveCodeBench prompt, date filter, extraction and code execution grader\n- Requires a local reference_path panel; benchmark downloads use standard loaders\n- Standard subset pass@k remains available alongside population-weighted accuracy\n- Use sandbox execution for generated code as in the full benchmark\n- Smaller ratios are experimental; no new GO/NO GO guarantee is certified\n- **Configuration required:** the generic Usage templates generated below are not\n  runnable unchanged for this benchmark. Supply `extra_params.reference_path` and\n  remove `--limit` / `limit=10`; use `prune_ratio` to control the retained size.\n  For a runnable offline example, from the repository root run:\n\n```python\nfrom evalscope import run_task\nrun_task('examples/live_code_bench_pruned/task.json')\n```\n\nSee `LIVE_CODE_BENCH_PRUNED.md` for the full reference-panel schema and live command.\n\n\n## Properties\n\n| Property | Value |\n|----------|-------|\n| **Benchmark Name** | `live_code_bench_pruned` |\n| **Dataset ID** | [evalscope/livecodebench_code_generation_lite_parquet](https://modelscope.cn/datasets/evalscope/livecodebench_code_generation_lite_parquet/summary) |\n| **Paper** | N/A |\n| **Tags** | `Coding` |\n| **Metrics** | `accuracy` |\n| **Default Shots** | 0-shot |\n| **Evaluation Split** | `test` |\n| **Aggregation** | `mean_and_pass_at_k` |\n\n\n## Data Statistics\n\n*Statistics not available.*\n\n## Sample Example\n\n*Sample example not available.*\n\n## Prompt Template\n\n**System Prompt:**\n```text\nYou are an expert Python programmer. You will be given a question (problem specification) and will generate a correct Python program that matches the specification and passes all tests. You will NOT return anything except for the program.\n```\n\n**Prompt Template:**\n```text\n### Question:\n{question_content}\n\n{format_prompt} ### Answer: (use the provided format with backticks)\n\n\n```\n\n## Extra Parameters\n\n| Parameter | Type | Default | Description |\n|-----------|------|---------|-------------|\n| `start_date` | `str | null` | `None` | Filter problems starting from this date (YYYY-MM-DD). Null keeps all. |\n| `end_date` | `str | null` | `None` | Filter problems up to this date (YYYY-MM-DD). Null keeps all. |\n| `debug` | `bool` | `False` | Enable verbose debug logging and bypass certain safety checks. |\n| `pruning_strategy` | `str` | `difficulty_stratified` | Historical stratification policy; comparison baselines are rejected. |\n| `prune_ratio` | `float` | `1.0` | Fraction retained in (0, 1]; 1.0 is the defended fallback. |\n| `reference_path` | `str` | `` | Local frozen reference panel JSON, schema version 1. |\n| `excluded_reference_models` | `list[str]` | `[]` | Additional reference model names to exclude (for pair holdouts). |\n\n## Sandbox Configuration\n\nThis benchmark requires a sandbox environment for code execution.\n\n```json\n{\n  \"image\": \"python:3.11-slim\",\n  \"tools_config\": {\n    \"shell_executor\": {},\n    \"python_executor\": {}\n  }\n}\n```\n\n## Usage\n\n### Using CLI\n\n```bash\nevalscope eval \\\n    --model YOUR_MODEL \\\n    --api-url OPENAI_API_COMPAT_URL \\\n    --api-key EMPTY_TOKEN \\\n    --datasets live_code_bench_pruned \\\n    --sandbox '{\"enabled\": true}' \\\n    --limit 10  # Remove this line for formal evaluation\n```\n\n### Using Python\n\n```python\nfrom evalscope import run_task\nfrom evalscope.config import TaskConfig\n\ntask_cfg = TaskConfig(\n    model='YOUR_MODEL',\n    api_url='OPENAI_API_COMPAT_URL',\n    api_key='EMPTY_TOKEN',\n    datasets=['live_code_bench_pruned'],\n    sandbox={'enabled': True},\n    dataset_args={\n        'live_code_bench_pruned': {\n            # extra_params: {}  # uses default extra parameters\n        }\n    },\n    limit=10,  # Remove this line for formal evaluation\n)\n\nrun_task(task_cfg=task_cfg)\n```\n\n\n",
+    "zh": "# LiveCodeBench (Reference Pruned)\n\n## 概述\n\n在本地评估流程中，历史参考分层的 LiveCodeBench 选择。默认情况下为全保留：参考分析未在其保守决策策略下验证更小的操作点。\n\n## 任务描述\n\n- **任务类型**：竞赛编程 / 代码生成\n- **输入**：原始 LiveCodeBench 题目及起始代码\n- **输出**：使用标准 LiveCodeBench 格式的 Python 解决方案\n- **领域**：编码能力筛选\n\n## 主要特点\n\n- 可配置的 difficulty_stratified 或 response_stratified 历史选择\n- prune_ratio 是保留比例，取值范围为 (0, 1]，向上取整\n- 冻结的问题指纹将分析索引绑定到源问题\n- 排除已评估模型成绩；选择发生在推理之前且可重复\n\n## 评估说明\n\n- 继承 LiveCodeBench 的提示词、日期过滤、提取和代码执行评分器\n- 需要本地 reference_path 面板；基准测试下载使用标准加载器\n- 标准子集 pass@k 依然可用，同时支持基于总体加权的准确率\n- 生成代码使用沙箱执行，与完整基准一致\n- 较小的比例为实验性质；不保证新的通过/不通过结果\n- **配置要求：** 下方生成的通用 Usage 模板不可直接运行本基准。需提供 `extra_params.reference_path` 并移除 `--limit` / `limit=10`；使用 `prune_ratio` 控制保留大小。要运行离线示例，请在仓库根目录执行：\n\n```python\nfrom evalscope import run_task\nrun_task('examples/live_code_bench_pruned/task.json')\n```\n\n详见 `LIVE_CODE_BENCH_PRUNED.md`，了解完整参考面板架构及实时命令。\n\n## 属性\n\n| 属性 | 值 |\n|----------|-------|\n| **基准测试名称** | `live_code_bench_pruned` |\n| **数据集ID** | [evalscope/livecodebench_code_generation_lite_parquet](https://modelscope.cn/datasets/evalscope/livecodebench_code_generation_lite_parquet/summary) |\n| **论文** | 不适用 |\n| **标签** | `Coding` |\n| **指标** | `accuracy` |\n| **默认示例数** | 0-shot |\n| **评估划分** | `test` |\n| **汇总方式** | `mean_and_pass_at_k` |\n\n## 数据统计\n\n*统计信息不可用。*\n\n## 样例示例\n\n*样例示例不可用。*\n\n## 提示模板\n\n**系统提示：**\n```text\nYou are an expert Python programmer. You will be given a question (problem specification) and will generate a correct Python program that matches the specification and passes all tests. You will NOT return anything except for the program.\n```\n\n**提示模板：**\n```text\n### Question:\n{question_content}\n\n{format_prompt} ### Answer: (use the provided format with backticks)\n\n\n```\n\n## 额外参数\n\n| 参数 | 类型 | 默认值 | 描述 |\n|-----------|------|---------|-------------|\n| `start_date` | `str | null` | `None` | 筛选起始日期（格式 YYYY-MM-DD），Null 表示全部保留。 |\n| `end_date` | `str | null` | `None` | 筛选截止日期（格式 YYYY-MM-DD），Null 表示全部保留。 |\n| `debug` | `bool` | `False` | 启用详细调试日志并跳过部分安全检查。 |\n| `pruning_strategy` | `str` | `difficulty_stratified` | 历史分层策略；比较基线被拒绝。 |\n| `prune_ratio` | `float` | `1.0` | 保留比例，范围 (0, 1]；1.0 为默认保底。 |\n| `reference_path` | `str` | `` | 本地冻结参考面板 JSON，架构版本1。 |\n| `excluded_reference_models` | `list[str]` | `[]` | 额外排除的参考模型名称（用于成对保留）。 |\n\n## 沙箱配置\n\n本基准测试需要沙箱环境执行代码。\n\n```json\n{\n  \"image\": \"python:3.11-slim\",\n  \"tools_config\": {\n    \"shell_executor\": {},\n    \"python_executor\": {}\n  }\n}\n```\n\n## 使用方法\n\n### 使用命令行\n\n```bash\nevalscope eval \\\n    --model YOUR_MODEL \\\n    --api-url OPENAI_API_COMPAT_URL \\\n    --api-key EMPTY_TOKEN \\\n    --datasets live_code_bench_pruned \\\n    --sandbox '{\"enabled\": true}' \\\n    --limit 10  # Remove this line for formal evaluation\n```\n\n### 使用 Python\n\n```python\nfrom evalscope import run_task\nfrom evalscope.config import TaskConfig\n\ntask_cfg = TaskConfig(\n    model='YOUR_MODEL',\n    api_url='OPENAI_API_COMPAT_URL',\n    api_key='EMPTY_TOKEN',\n    datasets=['live_code_bench_pruned'],\n    sandbox={'enabled': True},\n    dataset_args={\n        'live_code_bench_pruned': {\n            # extra_params: {}  # uses default extra parameters\n        }\n    },\n    limit=10,  # Remove this line for formal evaluation\n)\n\nrun_task(task_cfg=task_cfg)\n```",
+    "content_hash": "8a83be7da000eb81adc333f353d2fa04",
+    "needs_translation": false
+  },
+  "updated_at": "2026-10-22T11:40:16.498191",
+  "translation_updated_at": "2026-10-22T11:40:30"
+}

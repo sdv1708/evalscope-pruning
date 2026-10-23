@@ -1,3 +1,13 @@
+> **Private pruning development baseline:** upstream `modelscope/evalscope`, exact
+> base **`66f0945d145ce6c30de40253cd78144003c6f1fe`**. See
+> [PRUNING_BASELINE.md](PRUNING_BASELINE.md) for issue #18's native `pruning_smoke`
+> integration, setup, provenance, limitations and verification. Original upstream
+> documentation follows.
+
+> **Issue #19:** [Native LiveCodeBench pruning](LIVE_CODE_BENCH_PRUNED.md) adds
+> `live_code_bench_pruned`, exact historical selection, weighted reporting,
+> an offline example and the live endpoint run instructions.
+
 <p align="center">
     <br>
     <img src="docs/en/_static/images/evalscope_logo.png"/>

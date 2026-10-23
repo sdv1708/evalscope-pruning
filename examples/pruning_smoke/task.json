@@ -1,0 +1,14 @@
+{
+  "model": "pruning-smoke-mock",
+  "eval_type": "mock_llm",
+  "datasets": ["pruning_smoke"],
+  "dataset_args": {
+    "pruning_smoke": {
+      "extra_params": {"keep_per_stratum": 1}
+    }
+  },
+  "seed": 42,
+  "eval_batch_size": 1,
+  "judge": {"strategy": "rule"},
+  "work_dir": "outputs/pruning-smoke"
+}
