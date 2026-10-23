@@ -1,20 +1,19 @@
 """AA-LCR pruning contracts through the public registry, loader and judge."""
 
+import csv
 import hashlib
 import json
 import subprocess
 import sys
+import unicodedata
 from pathlib import Path
 
 import pytest
 
-from evalscope.api.evaluator import TaskState
 from evalscope.api.metric import SampleScore, Score
-from evalscope.api.model import ModelOutput
 from evalscope.api.registry import get_benchmark
 from evalscope.config import TaskConfig
 from evalscope.constants import ScoreStatus
-from evalscope.metrics.judge.llm_judge import DEFAULT_PROMPT_TEMPLATE, LLMJudge
 from evalscope.models.mockllm import MockLLM
 
 
@@ -83,6 +82,29 @@ def test_default_is_full_retention_and_remote_source_requires_pinned_hub(tmp_pat
     adapter = get_benchmark('aa_lcr_pruned', config)
     assert adapter.dataset_revision == 'bdae010bbce259820c0e34c1d7cce210d966fb75'
     assert adapter.dataset_id == 'ArtificialAnalysis/AA-LCR'
+
+
+def test_csv_mirror_and_legacy_zip_filename_encoding_load_through_registry(tmp_path: Path) -> None:
+    source, panel, texts = population(tmp_path)
+    rows = [json.loads(line) for line in source.read_text(encoding='utf-8').splitlines()]
+    name = 'Official Journal\u2019s document.txt'
+    legacy_name = name.encode('utf-8').decode('cp437')
+    (texts/'fixture/set'/legacy_name).write_text('Legacy ZIP filename, original content.', encoding='utf-8')
+    rows[0]['data_source_filenames'] = name
+    decomposed_name = 'Ba\u015fev.txt'
+    archive_name = unicodedata.normalize('NFD', decomposed_name).encode('utf-8').decode('cp437')
+    (texts/'fixture/set'/archive_name).write_text('Decomposed ZIP filename.', encoding='utf-8')
+    rows[1]['data_source_filenames'] = decomposed_name
+    csv_source = source.with_suffix('.csv')
+    with csv_source.open('w', encoding='utf-8', newline='') as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
+        writer.writeheader()
+        writer.writerows(rows)
+    samples = list(get_benchmark('aa_lcr_pruned', configuration(csv_source, panel, texts)).load_dataset()['fixture'])
+    assert len(samples) == 12
+    assert samples[0].metadata['input_tokens'] == 100
+    assert 'Legacy ZIP filename, original content.' in str(samples[0].input)
+    assert 'Decomposed ZIP filename.' in str(samples[1].input)
 
 
 @pytest.mark.parametrize('ratio', [0, -0.1, 1.01, True, '0.5', None, float('nan'), float('inf')])
@@ -174,35 +196,6 @@ def test_invalid_source_or_configuration_fails_before_inference(tmp_path: Path, 
     with pytest.raises((ValueError, FileNotFoundError)):
         get_benchmark('aa_lcr_pruned', config).load_dataset()
 
-
-@pytest.mark.parametrize('reply, expected', [('{"verdict":"CORRECT"}', 1), ('{"verdict":"INCORRECT"}', 0), ('prose', None), ('[ERROR] transport', None)])
-def test_inherited_judge_contract_scores_or_excludes(tmp_path: Path, reply: str, expected: int | None) -> None:
-    source, panel, texts = population(tmp_path)
-    config = configuration(source, panel, texts)
-    config.judge.strategy = 'llm'
-    adapter = get_benchmark('aa_lcr_pruned', config)
-
-    class Judge(LLMJudge):
-        judge_id = model_id = 'scripted'
-
-        def __init__(self) -> None:
-            self.score_type = 'pattern'
-            self.score_mapping = {'CORRECT': 1.0, 'INCORRECT': 0.0}
-            self.prompt_template = DEFAULT_PROMPT_TEMPLATE
-            self.system_prompt = None
-
-        def generate(self, messages: object) -> ModelOutput:
-            return ModelOutput.from_content('scripted', reply)
-
-    adapter.llm_judge = Judge()
-    sample = list(adapter.load_dataset()['fixture'])[0]
-    state = TaskState(model='unseen', sample=sample, output=ModelOutput.from_content('unseen', 'Answer'), completed=True)
-    result = adapter.calculate_metrics(state)
-    if expected is None:
-        assert result.score.status is ScoreStatus.EXCLUDED
-        assert result.score.value == {}
-    else:
-        assert result.score.value == {'acc': expected}
 
 
 def test_cli_smoke_has_native_reports_and_population_provenance(tmp_path: Path) -> None:

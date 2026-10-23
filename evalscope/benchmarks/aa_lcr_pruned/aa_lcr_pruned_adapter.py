@@ -1,5 +1,6 @@
 """AA-LCR selection in the native loader with inherited contract-based judging."""
 
+import unicodedata
 from dataclasses import replace
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -120,6 +121,20 @@ class AALCRPrunedAdapter(ReferencePruningAdapter, AALCRAdapter):
         documents = []
         for filename in filenames.split(';'):
             path = folder / filename.strip()
+            if not path.is_file():
+                # The pinned ZIP omits its UTF-8 flag for four non-ASCII names.
+                # One is also decomposed Unicode. Resolve only these exact encodings.
+                decomposed = unicodedata.normalize('NFD', filename.strip())
+                aliases = {
+                    folder / decomposed,
+                    folder / filename.strip().encode('utf-8').decode('cp437'),
+                    folder / decomposed.encode('utf-8').decode('cp437'),
+                }
+                matches = [alias for alias in aliases if alias.is_file()]
+                if len(matches) > 1:
+                    raise ValueError(f'AA-LCR document filename is ambiguous: {filename}')
+                if matches:
+                    path = matches[0]
             if not path.resolve().is_relative_to(Path(self.text_dir).resolve()):
                 raise ValueError('AA-LCR document path escapes text_dir.')
             content = path.read_text(encoding='utf-8').strip()
@@ -130,6 +145,9 @@ class AALCRPrunedAdapter(ReferencePruningAdapter, AALCRAdapter):
 
     def record_to_sample(self, record: Dict[str, Any]) -> Sample:
         """Add stable identity without using row order or target outputs."""
+        tokens = record.get('input_tokens')
+        if isinstance(tokens, str) and tokens.isascii() and tokens.isdecimal():
+            record = {**record, 'input_tokens': int(tokens)}
         sample = super().record_to_sample(record)
         sample.metadata['question_sha256'] = question_fingerprint(record['question'])
         return sample

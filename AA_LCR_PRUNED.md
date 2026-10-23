@@ -105,6 +105,14 @@ comparable with the historical evidence. This extension preserves the pinned
 EvalScope AA-LCR judge contract rather than claiming parity with newer official
 grading. Keep judge model, prompt, policy and source revision in comparisons.
 
+The original ZIP also omits the UTF-8 filename flag for four non-ASCII names;
+one additionally uses decomposed Unicode. For a missing exact declared filename,
+the adapter resolves only the corresponding CP437/decomposed-Unicode names and
+rejects ambiguity. It does not fuzzy-match filenames or modify document contents.
+Local CSV decimal token fields are normalized before strict metadata comparison.
+The real pinned CSV and archive have been loaded through the native mirror path:
+all 100 contexts read successfully, without inference or judge calls.
+
 ## Selection and metrics
 
 The target model name, underlying model name and display identity are excluded

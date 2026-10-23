@@ -5,7 +5,7 @@ Base private main: `3e850321`. Upstream framework pin:
 
 | Check | Result |
 | --- | --- |
-| Complete relevant native suite plus required upstream CI smoke | **207 passed**, including all **32 AA-LCR feature tests** |
+| Complete relevant native suite plus required upstream CI smoke | **208 passed**, including all **33 AA-LCR feature tests** |
 | Complete submission Task 2 suite | **129 passed** |
 | Independent native selection and historical replay | **1,200 cases passed** |
 | Feature Ruff check and format | Passed |
@@ -17,11 +17,11 @@ Base private main: `3e850321`. Upstream framework pin:
 The first expanded run had 204 passes and three existing ArenaHard judge tests
 missing optional `scikit-learn`. Installed the dependency from that benchmark's
 requirements (`uv pip install --python .venv/Scripts/python.exe scikit-learn`),
-then the same full relevant command passed all 207 tests. Upstream syntax and
+then the full relevant command passed. After review fixes, the final tree passed all 208 tests. Upstream syntax and
 Pydantic warnings are unchanged.
 
 ```powershell
-.venv/Scripts/python.exe -m pytest tests/api/test_aa_lcr_pruned.py tests/api/test_live_code_bench_pruned.py tests/api/test_pruning_smoke.py tests/api/test_default_data_adapter.py tests/api/test_dataset_dict_limit.py tests/api/test_benchmark_registry_contract.py tests/api/test_benchmark_meta.py tests/benchmark/test_live_code_bench_prompt.py tests/benchmark/test_live_code_bench_sandbox_stdio.py tests/api/judge/test_migrated_adapters.py tests/api/judge/test_gates.py tests/cli/test_all.py::TestRun::test_ci_lite --basetemp=.pytest-tmp/issue20-final -q
+.venv/Scripts/python.exe -m pytest tests/api/test_aa_lcr_pruned.py tests/api/test_live_code_bench_pruned.py tests/api/test_pruning_smoke.py tests/api/test_default_data_adapter.py tests/api/test_dataset_dict_limit.py tests/api/test_benchmark_registry_contract.py tests/api/test_benchmark_meta.py tests/benchmark/test_live_code_bench_prompt.py tests/benchmark/test_live_code_bench_sandbox_stdio.py tests/api/judge/test_migrated_adapters.py tests/api/judge/test_gates.py tests/cli/test_all.py::TestRun::test_ci_lite --basetemp=.pytest-tmp/issue20-complete -q
 ```
 
 Loopback model/judge fixtures and the inherited coding grader require ordinary
@@ -64,3 +64,10 @@ are unchanged except the generated LLM discovery tables.
 See [AA_LCR_PRUNED.md](AA_LCR_PRUNED.md) for live and offline commands, report
 semantics, historical source limits and unmeasured judge noise. Smaller ratios
 are experimental. No fresh-model accuracy, savings or deployment guarantee is claimed.
+
+Review fixes added a native CSV/legacy-ZIP filename regression: strict decimal
+CSV tokens are converted before metadata validation, and exact CP437/Unicode NFD
+filename variants cover the four malformed archive names. All 100 real pinned
+question contexts then loaded successfully. Judge contract cases reside in the
+required migrated-adapter test module. The final source check and synthetic
+fixtures perform no paid inference. Both review axes have no actionable findings.

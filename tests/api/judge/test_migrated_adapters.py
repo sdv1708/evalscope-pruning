@@ -1,6 +1,7 @@
 """Smoke tests for migrated Native judge adapters."""
 
 import json
+from pathlib import Path
 from typing import Any, List
 
 import pytest
@@ -436,3 +437,25 @@ def test_mt_bench_transport_failure_excludes_the_sample() -> None:
     assert score.status is ScoreStatus.EXCLUDED
     assert score.value == {}
     assert score.metadata['judge_attempts'][0]['status'] == 'transport_error'
+
+
+@pytest.mark.parametrize('reply, expected', [
+    ('{"verdict":"CORRECT"}', 1), ('{"verdict":"INCORRECT"}', 0),
+    ('prose', None), ('[ERROR] transport', None),
+])
+def test_aa_lcr_pruned_judge_contract_scores_or_excludes(tmp_path: Path, reply: str, expected: int | None) -> None:
+    from tests.api.test_aa_lcr_pruned import configuration, population
+
+    source, panel, texts = population(tmp_path)
+    config = configuration(source, panel, texts)
+    config.judge.strategy = 'llm'
+    adapter = get_benchmark('aa_lcr_pruned', config)
+    adapter.llm_judge = ScriptedJudge([reply])
+    sample = list(adapter.load_dataset()['fixture'])[0]
+    state = TaskState(model='unseen', sample=sample, output=ModelOutput.from_content('unseen', 'Answer'), completed=True)
+    result = adapter.calculate_metrics(state)
+    if expected is None:
+        assert result.score.status is ScoreStatus.EXCLUDED
+        assert result.score.value == {}
+    else:
+        assert result.score.value == {'acc': expected}
