@@ -1,0 +1,72 @@
+{
+  "meta": {
+    "pretty_name": "AA-LCR (Reference Pruned)",
+    "dataset_id": "evalscope/AA-LCR",
+    "paper_url": null,
+    "tags": [
+      "Knowledge",
+      "Reasoning",
+      "LongContext"
+    ],
+    "metrics": [
+      "accuracy"
+    ],
+    "few_shot_num": 0,
+    "eval_split": "test",
+    "train_split": "",
+    "subset_list": [
+      "default"
+    ],
+    "description": "\n## Overview\n\nNative AA-LCR historical-reference selection. The defended default retains the full\n100-question reference population: no smaller tested candidate passed every fidelity gate.\n\n## Task Description\n\n- **Task Type**: Long-context question answering\n- **Input**: Original multi-document context and question\n- **Output**: Free-form answer evaluated against the reference\n- **Domain**: Long-context reasoning\n\n## Key Features\n\n- length_difficulty_stratified crosses token-length thirds with historical pass counts\n- metadata_stratified crosses length with document-URL-count thirds\n- prune_ratio is a retained fraction in (0, 1], rounded up; default 1.0\n- Question fingerprints and validated benchmark metadata bind the frozen population\n- Target reference grades are excluded before selection; repeats follow selection\n- Hugging Face source is pinned to historical v1.0, not the revised v1.1 answers/judge\n\n## Evaluation Notes\n\n- Inherits AA-LCR prompting and contract-based binary LLM judging; requires a judge\n- Reports raw subset accuracy and a separate population-weighted mean\n- Judge randomness is unmeasured: sampling intervals do not include judge error\n- Full retention removes sampling error only; repeats generate new answers, not repeat judging\n- Missing/invalid judge verdicts exclude the sample and fail the population estimate closed\n- Smaller ratios are research settings, without a new-model or GO/NO GO guarantee\n- Requires reference_path and dataset_hub=huggingface for pinned remote data;\n  text_dir may name a local extracted corpus\n- Context uses data_source_filenames order and fails on missing/empty files\n- Generic Usage templates below require reference_path and removal of limit;\n  control retained size through prune_ratio. Credential-free synthetic smoke:\n\n```bash\npython examples/aa_lcr_pruned/smoke.py\n```\n\nSee AA_LCR_PRUNED.md for live configuration, historical replay and judge limitations.\n",
+    "prompt_template": "\nBEGIN INPUT DOCUMENTS\n\n{documents_text}\n\nEND INPUT DOCUMENTS\n\nAnswer the following question using the input documents provided above.\n\nSTART QUESTION\n\n{question}\n\nEND QUESTION\n",
+    "system_prompt": "",
+    "few_shot_prompt_template": "",
+    "aggregation": "mean",
+    "extra_params": {
+      "text_dir": {
+        "type": "str | null",
+        "description": "Local directory containing extracted AA-LCR text files; if null will auto-download & extract.",
+        "value": null
+      },
+      "pruning_strategy": {
+        "type": "str",
+        "description": "AA-LCR historical strata; baselines rejected.",
+        "value": "length_difficulty_stratified"
+      },
+      "prune_ratio": {
+        "type": "float",
+        "description": "Retained fraction; 1.0 is the defended fallback.",
+        "value": 1.0
+      },
+      "reference_path": {
+        "type": "str",
+        "description": "Local frozen AA-LCR panel JSON.",
+        "value": ""
+      },
+      "excluded_reference_models": {
+        "type": "list[str]",
+        "description": "Additional holdout model names.",
+        "value": []
+      }
+    },
+    "sandbox_config": {},
+    "category": "llm",
+    "primary_metric": {
+      "name": "accuracy",
+      "aggregation": "weighted_mean",
+      "dimensions": {
+        "scope": "population"
+      }
+    },
+    "requires_judge": true
+  },
+  "statistics": {},
+  "sample_example": {},
+  "readme": {
+    "en": "# AA-LCR (Reference Pruned)\n\n\n## Overview\n\nNative AA-LCR historical-reference selection. The defended default retains the full\n100-question reference population: no smaller tested candidate passed every fidelity gate.\n\n## Task Description\n\n- **Task Type**: Long-context question answering\n- **Input**: Original multi-document context and question\n- **Output**: Free-form answer evaluated against the reference\n- **Domain**: Long-context reasoning\n\n## Key Features\n\n- length_difficulty_stratified crosses token-length thirds with historical pass counts\n- metadata_stratified crosses length with document-URL-count thirds\n- prune_ratio is a retained fraction in (0, 1], rounded up; default 1.0\n- Question fingerprints and validated benchmark metadata bind the frozen population\n- Target reference grades are excluded before selection; repeats follow selection\n- Hugging Face source is pinned to historical v1.0, not the revised v1.1 answers/judge\n\n## Evaluation Notes\n\n- Inherits AA-LCR prompting and contract-based binary LLM judging; requires a judge\n- Reports raw subset accuracy and a separate population-weighted mean\n- Judge randomness is unmeasured: sampling intervals do not include judge error\n- Full retention removes sampling error only; repeats generate new answers, not repeat judging\n- Missing/invalid judge verdicts exclude the sample and fail the population estimate closed\n- Smaller ratios are research settings, without a new-model or GO/NO GO guarantee\n- Requires reference_path and dataset_hub=huggingface for pinned remote data;\n  text_dir may name a local extracted corpus\n- Context uses data_source_filenames order and fails on missing/empty files\n- Generic Usage templates below require reference_path and removal of limit;\n  control retained size through prune_ratio. Credential-free synthetic smoke:\n\n```bash\npython examples/aa_lcr_pruned/smoke.py\n```\n\nSee AA_LCR_PRUNED.md for live configuration, historical replay and judge limitations.\n\n\n## Properties\n\n| Property | Value |\n|----------|-------|\n| **Benchmark Name** | `aa_lcr_pruned` |\n| **Dataset ID** | [evalscope/AA-LCR](https://modelscope.cn/datasets/evalscope/AA-LCR/summary) |\n| **Paper** | N/A |\n| **Tags** | `Knowledge`, `LongContext`, `Reasoning` |\n| **Metrics** | `accuracy` |\n| **Default Shots** | 0-shot |\n| **Evaluation Split** | `test` |\n\n\n## Data Statistics\n\n*Statistics not available.*\n\n## Sample Example\n\n*Sample example not available.*\n\n## Prompt Template\n\n**Prompt Template:**\n```text\n\nBEGIN INPUT DOCUMENTS\n\n{documents_text}\n\nEND INPUT DOCUMENTS\n\nAnswer the following question using the input documents provided above.\n\nSTART QUESTION\n\n{question}\n\nEND QUESTION\n\n```\n\n## Extra Parameters\n\n| Parameter | Type | Default | Description |\n|-----------|------|---------|-------------|\n| `text_dir` | `str | null` | `None` | Local directory containing extracted AA-LCR text files; if null will auto-download & extract. |\n| `pruning_strategy` | `str` | `length_difficulty_stratified` | AA-LCR historical strata; baselines rejected. |\n| `prune_ratio` | `float` | `1.0` | Retained fraction; 1.0 is the defended fallback. |\n| `reference_path` | `str` | `` | Local frozen AA-LCR panel JSON. |\n| `excluded_reference_models` | `list[str]` | `[]` | Additional holdout model names. |\n\n## Usage\n\n### Using CLI\n\n```bash\nevalscope eval \\\n    --model YOUR_MODEL \\\n    --api-url OPENAI_API_COMPAT_URL \\\n    --api-key EMPTY_TOKEN \\\n    --datasets aa_lcr_pruned \\\n    --judge '{\"strategy\":\"llm\",\"models\":[{\"model_id\":\"YOUR_JUDGE_MODEL\"}]}' \\\n    --limit 10  # Remove this line for formal evaluation\n```\n\n### Using Python\n\n```python\nfrom evalscope import run_task\nfrom evalscope.config import TaskConfig\n\ntask_cfg = TaskConfig(\n    model='YOUR_MODEL',\n    api_url='OPENAI_API_COMPAT_URL',\n    api_key='EMPTY_TOKEN',\n    datasets=['aa_lcr_pruned'],\n    judge={'strategy': 'llm', 'models': [{'model_id': 'YOUR_JUDGE_MODEL'}]},\n    dataset_args={\n        'aa_lcr_pruned': {\n            # extra_params: {}  # uses default extra parameters\n        }\n    },\n    limit=10,  # Remove this line for formal evaluation\n)\n\nrun_task(task_cfg=task_cfg)\n```\n\n\n",
+    "zh": "",
+    "content_hash": "e68856e287346a4a71ceeac262df1a9f",
+    "needs_translation": true
+  },
+  "updated_at": "2026-10-22T23:14:51.674713"
+}

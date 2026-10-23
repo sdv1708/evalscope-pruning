@@ -5,18 +5,18 @@ import json
 import math
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Set
+from typing import Any, Dict, Generic, List, Literal, Set, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from typing_extensions import Self
 
 
-class PruningConfig(BaseModel):
+class SelectionConfig(BaseModel):
     """A ratio is the fraction retained; full retention is the supported default."""
 
     model_config = ConfigDict(strict=True, extra='forbid')
 
-    pruning_strategy: Literal['difficulty_stratified', 'response_stratified'] = 'difficulty_stratified'
+    pruning_strategy: str
     prune_ratio: float = Field(default=1.0, gt=0, le=1, allow_inf_nan=False)
     reference_path: str = ''
     excluded_reference_models: List[str] = Field(default_factory=list)
@@ -28,6 +28,12 @@ class PruningConfig(BaseModel):
         if isinstance(value, bool) or not isinstance(value, (int, float)):
             raise ValueError('prune_ratio must be a finite number in (0, 1].')
         return value
+
+
+class PruningConfig(SelectionConfig):
+    """LiveCodeBench reference-stratification configuration."""
+
+    pruning_strategy: Literal['difficulty_stratified', 'response_stratified'] = 'difficulty_stratified'
 
 
 def question_fingerprint(question: str) -> str:
@@ -54,13 +60,16 @@ class ReferenceTask(BaseModel):
         return scores
 
 
-class ReferencePanel(BaseModel):
+Task = TypeVar('Task', bound=ReferenceTask)
+
+
+class ReferencePanel(BaseModel, Generic[Task]):
     """A complete, unique reference population with optional provenance."""
 
     model_config = ConfigDict(strict=True, extra='forbid')
 
     schema_version: Literal[1]
-    tasks: List[ReferenceTask] = Field(min_length=1)
+    tasks: List[Task] = Field(min_length=1)
     provenance: Dict[str, Any] = Field(default_factory=dict)
 
     @model_validator(mode='after')
@@ -85,13 +94,16 @@ def _unique_object(pairs: List[tuple]) -> Dict[str, Any]:
     return result
 
 
-def load_reference_panel(path: str) -> ReferencePanel:
+def load_reference_panel(path: str) -> ReferencePanel[ReferenceTask]:
     """Read a local panel without downloads or model calls."""
+    return ReferencePanel[ReferenceTask].model_validate(read_reference_json(path))
+
+
+def read_reference_json(path: str) -> Any:
+    """Read local reference JSON and reject duplicate keys."""
     if not path:
         raise ValueError('reference_path is required; supply a frozen historical reference panel.')
-    return ReferencePanel.model_validate(
-        json.loads(Path(path).read_text(encoding='utf-8'), object_pairs_hook=_unique_object)
-    )
+    return json.loads(Path(path).read_text(encoding='utf-8'), object_pairs_hook=_unique_object)
 
 
 class SelectedTask(BaseModel):
@@ -108,7 +120,7 @@ class SelectedTask(BaseModel):
 
 
 def select_tasks(
-    panel: ReferencePanel, config: PruningConfig, *, seed: int, excluded_models: Set[str]
+    panel: ReferencePanel[ReferenceTask], config: PruningConfig, *, seed: int, excluded_models: Set[str]
 ) -> List[SelectedTask]:
     """Reproduce the analysis v1 allocation and SHA-256 priorities exactly.
 
@@ -128,8 +140,13 @@ def select_tasks(
             else 'pattern:' + ''.join(map(str, pattern))
         )
         groups[key].append(task)
-    total = len(panel.tasks)
-    budget = math.ceil(total * config.prune_ratio)
+    return allocate_tasks(groups, ratio=config.prune_ratio, seed=seed)
+
+
+def allocate_tasks(groups: Dict[str, List[Task]], *, ratio: float, seed: int) -> List[SelectedTask]:
+    """Cover every occupied stratum using the original proportional/hash design."""
+    total = sum(len(members) for members in groups.values())
+    budget = math.ceil(total * ratio)
     if budget < len(groups):
         raise ValueError(f'Budget {budget} cannot cover {len(groups)} occupied strata.')
     allocation = dict.fromkeys(sorted(groups), 1)

@@ -8,6 +8,10 @@
 > `live_code_bench_pruned`, exact historical selection, weighted reporting,
 > an offline example and the live endpoint run instructions.
 
+> **Issue #20:** [Native AA-LCR pruning](AA_LCR_PRUNED.md) adds `aa_lcr_pruned`,
+> length/difficulty and metadata strata, pinned historical source identities,
+> weighted reporting with judge-noise limits, and a credential-free CLI smoke.
+
 <p align="center">
     <br>
     <img src="docs/en/_static/images/evalscope_logo.png"/>
