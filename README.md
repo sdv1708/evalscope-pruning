@@ -1,3 +1,13 @@
+> **Task 2 reviewer start:** [install, test, run and interpret the pruning workflow](TASK2_README.md).
+> Upstream base: **`66f0945d145ce6c30de40253cd78144003c6f1fe`**;
+> tested runtime: **`800119ff6870ca958f5d8459970f5fe75bfac305`**.
+> Native datasets: `live_code_bench_pruned`, `aa_lcr_pruned`;
+> comparison: `python -m evalscope_ext.tools.compare_runs --full FULL --pruned PRUNED`.
+> Defended defaults retain **315/315 coding and 100/100 long-context questions**:
+> **0% demonstrated sample saving**. The [written walkthrough](TASK2_README.md#written-walkthrough)
+> is available; recording is [deferred to issue #49](https://github.com/sdv1708/ai-model-benchmark/issues/49)
+> and remains required for submission.
+
 > **Private pruning development baseline:** upstream `modelscope/evalscope`, exact
 > base **`66f0945d145ce6c30de40253cd78144003c6f1fe`**. See
 > [PRUNING_BASELINE.md](PRUNING_BASELINE.md) for issue #18's native `pruning_smoke`
