@@ -5,7 +5,8 @@
 > comparison: `python -m evalscope_ext.tools.compare_runs --full FULL --pruned PRUNED`.
 > Defended defaults retain **315/315 coding and 100/100 long-context questions**:
 > **0% demonstrated sample saving**. The [written walkthrough](TASK2_README.md#written-walkthrough)
-> is available; video is skipped at the owner's direction and remains an unmet submission requirement.
+> is available; recording is [deferred to issue #49](https://github.com/sdv1708/ai-model-benchmark/issues/49)
+> and remains required for submission.
 
 > **Private pruning development baseline:** upstream `modelscope/evalscope`, exact
 > base **`66f0945d145ce6c30de40253cd78144003c6f1fe`**. See

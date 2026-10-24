@@ -173,9 +173,10 @@ in environment variables and keep them out of shared command/config evidence.
    encoder-only intervention could support encoder-specific causality. The existing
    image harness is offline/synthetic; the full probe remains a design proposal.
 
-This walkthrough can be read and rehearsed without recording. **Video: skipped at
-the owner's direction; no recording/link exists.** The original submission still
-requires it, and this written walkthrough does not fulfill that criterion.
+This walkthrough can be read and rehearsed before recording. **Video: deferred to
+[issue #49](https://github.com/sdv1708/ai-model-benchmark/issues/49) at the owner's
+request; no recording/link exists yet.** It remains required for submission and
+is tracked separately from issue #26's written documentation.
 
 ## Sources and next experiment
 

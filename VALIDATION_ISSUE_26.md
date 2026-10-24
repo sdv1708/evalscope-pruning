@@ -11,8 +11,11 @@ evaluation, comparison, relevant regression/type/lint commands, real-provider
 runbook links, method, weighted interpretation and the written walkthrough.
 No runtime behavior changes, new test seam or new paid model result is introduced.
 
-The owner requested skipping video. No recording/link exists, and the README
-and submission checklist explicitly preserve the unmet video requirement.
+The owner requested deferring the video into a separate ticket. Recording,
+publishing and reviewer access are now tracked in open
+[issue #49](https://github.com/sdv1708/ai-model-benchmark/issues/49). No recording/link
+exists yet; the requirement remains active for submission and is separate from
+issue #26's written deliverables.
 Private reviewer access, remote branch publication and form submission are not
 claimed verified or performed.
 
