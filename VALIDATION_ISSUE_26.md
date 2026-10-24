@@ -16,8 +16,8 @@ publishing and reviewer access are now tracked in open
 [issue #49](https://github.com/sdv1708/ai-model-benchmark/issues/49). No recording/link
 exists yet; the requirement remains active for submission and is separate from
 issue #26's written deliverables.
-Private reviewer access, remote branch publication and form submission are not
-claimed verified or performed.
+This validation does not certify private reviewer access or submission-form
+completion. Branch publication is tracked by the accompanying pull request.
 
 ## Isolated installation and native workflow
 
@@ -87,7 +87,8 @@ The selected suite and install instructions are in [TASK2_README.md](TASK2_READM
 Native smoke/test logs and saved runs remain under the clean clone's ignored
 `outputs/`. The challenge repository records the fresh comparison JSON, historical
 replay, complete 152-test analysis suite, acceptance status and review evidence.
-Both new documentation branches are local; remote publication is pending.
+Both documentation branches are prepared for pull-request review. Merge and
+final submission remain pending.
 
 Independent parallel Standards and Spec reviewers checked both repositories.
 Standards found zero actionable issues. Spec review repaired the shared production
