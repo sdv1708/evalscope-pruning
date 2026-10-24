@@ -20,7 +20,7 @@ Use Git, uv, Python 3.12 and PowerShell 7. Access to the private repository and
 internet for package installation are prerequisites. From a parent directory:
 
 ```powershell
-git clone https://github.com/sdv1708/evalscope-pruning.git
+git clone -c core.autocrlf=false https://github.com/sdv1708/evalscope-pruning.git
 cd evalscope-pruning
 git checkout 800119ff6870ca958f5d8459970f5fe75bfac305
 uv venv --python 3.12
@@ -29,7 +29,9 @@ uv pip install --python .venv/Scripts/python.exe --no-deps -e .
 ```
 
 Stop if any command fails. The historical runtime checkout predates this guide;
-keep this guide open while following it. The snapshot was tested on Windows with
+keep this guide open while following it. The clone option preserves the LF source
+endings required by the fork's formatter without changing global Git settings.
+The snapshot was tested on Windows with
 Python 3.12.8. On POSIX, use `.venv/bin/python` and revalidate dependencies as
 described in [PRUNING_BASELINE.md](PRUNING_BASELINE.md). Direct interpreter paths
 avoid requiring shell activation. Upstream's broader supported Python range does
@@ -74,6 +76,9 @@ The fixture's 75% reduction proves wiring, not real-world compression quality.
 From the installed fork root:
 
 ```powershell
+uv pip install --python .venv/Scripts/python.exe scikit-learn==1.9.1 threadpoolctl==3.7.0
+New-Item -ItemType Directory -Path .pytest-tmp -Force > $null
+if (Test-Path .env) { throw 'Run this suite in a clean clone without .env so CI-lite uses its mock model' }
 .venv/Scripts/python.exe -m pytest tests/tools/test_compare_runs.py tests/api/test_aa_lcr_pruned.py tests/api/test_live_code_bench_pruned.py tests/api/test_pruning_smoke.py tests/api/test_default_data_adapter.py tests/api/test_dataset_dict_limit.py tests/api/test_benchmark_registry_contract.py tests/api/test_benchmark_meta.py tests/benchmark/test_live_code_bench_prompt.py tests/benchmark/test_live_code_bench_sandbox_stdio.py tests/api/judge/test_migrated_adapters.py tests/api/judge/test_gates.py tests/cli/test_all.py::TestRun::test_ci_lite --basetemp=.pytest-tmp/task2-review -q
 .venv/Scripts/python.exe -m mypy --follow-imports=silent --ignore-missing-imports evalscope_ext tests/tools/test_compare_runs.py examples/aa_lcr_pruned/smoke.py
 .venv/Scripts/python.exe -m ruff check evalscope_ext tests/tools/test_compare_runs.py
@@ -81,9 +86,15 @@ From the installed fork root:
 .venv/Scripts/lint-imports.exe
 ```
 
-The selected suite covers both adapters, comparator, loader behavior, registration,
-coding prompt/sandbox behavior, judge contracts and upstream CI-lite. CI-lite may
-download public test data on its first run; it uses a mock model. See
+The extra scikit-learn installation, with its pinned threadpoolctl dependency,
+supports three inherited ArenaHard judge
+regressions included in this suite; it is not needed by the pruning smoke itself.
+Creating the temporary-directory parent is necessary in a new clone. The selected
+suite covers both adapters, comparator, loader behavior, registration,
+coding prompt/sandbox behavior, judge contracts and upstream CI-lite. CI-lite reads
+its provider key from a local `.env` file, not the process environment. The guard
+requires a clean clone without that file, so CI-lite uses its mock model; it may
+download public test data on its first run. See
 [prior validation](VALIDATION_ISSUE_21.md) and [issue #26 verification](VALIDATION_ISSUE_26.md)
 for the exact scope and results. The complete upstream suite has optional backend
 dependencies beyond this snapshot and is not claimed to pass wholesale.
@@ -137,8 +148,9 @@ in environment variables and keep them out of shared command/config evidence.
    available before evaluating a new candidate. Holdout stress tests do not prove
    transfer to a fourth model.
 3. **Integration:** Inspect `evalscope/benchmarks/live_code_bench_pruned/` and
-   `evalscope/benchmarks/aa_lcr_pruned/`. Both use the common implementation under
-   `evalscope/benchmarks/pruning_smoke/`. The `DefaultDataAdapter.load_subset` seam
+   `evalscope/benchmarks/aa_lcr_pruned/`. Both inherit `ReferencePruningAdapter` in
+   `evalscope/benchmarks/_reference_pruning/adapter.py`, with shared selection in
+   the adjacent `selection.py`. The `DefaultDataAdapter.load_subset` seam
    selects the complete eligible population before repeats/inference. Existing
    prompt conversion, model calls, coding sandbox, judge contracts and reports
    remain in the framework. It is a native registered extension.
