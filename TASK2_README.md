@@ -6,7 +6,7 @@ and licensing; it is a derived repository rather than a GitHub fork-network fork
 
 **Upstream base: `66f0945d145ce6c30de40253cd78144003c6f1fe`.**
 **Tested runtime: `800119ff6870ca958f5d8459970f5fe75bfac305`.**
-The historical analysis, reference panels and MMMU proposal live in the
+The historical analysis, reference panels, and MMMU proposal live in the
 [main project repository](https://github.com/sdv1708/ai-model-benchmark).
 
 The defended result is **full retention: 315 coding / 100 AA-LCR questions**.
@@ -15,7 +15,7 @@ No smaller production compression or live cost saving is established.
 
 ## Install from a clean clone
 
-Use Git, uv, Python 3.12 and PowerShell 7. Internet access for package
+Use Git, uv, Python 3.12, and PowerShell 7. Internet access for package
 installation is a prerequisite. From a parent directory:
 
 ```powershell
@@ -116,7 +116,7 @@ Key configuration contract:
 | `--datasets live_code_bench_pruned` | Coding adapter with original grading tests |
 | `--datasets aa_lcr_pruned` | Long-document adapter with LLM judging |
 | `dataset_args.<dataset>.extra_params.pruning_strategy` | `difficulty_stratified` / `length_difficulty_stratified` defended strategies |
-| `extra_params.reference_path` | Absolute path to the matching challenge `task2/data/*-reference-panel.json` |
+| `extra_params.reference_path` | Absolute path to the matching main project `task2/data/*-reference-panel.json` |
 | `extra_params.prune_ratio` | Fraction **retained**, rounded up; 1.0 is defended |
 | `--work-dir FULL` / `--work-dir PRUNED` | Actual flag at this pin; the brief's `--output` is conceptual |
 | `--no-timestamp` | Makes those exact saved run roots |
@@ -131,7 +131,7 @@ Match model, population, source revision, prompt, generation, judge, sandbox and
 repetitions. Explicitly exclude canonical reference model names if testing aliases
 of historical models; the adapter cannot infer arbitrary aliases. The comparator
 needs exact roots containing `configs/task_config.yaml`, `reports/` and `reviews/`.
-Historical challenge JSONL files alone are not native runs. Set provider secrets
+Historical JSONL files from the main project alone are not native runs. Set provider secrets
 in environment variables and keep them out of shared command/config evidence.
 
 ## Written walkthrough
@@ -190,6 +190,6 @@ as deployment approval.
 
 This guide started as the Task 2 reviewer guide of an AI model quality challenge.
 Issue numbers refer to the [main project issue tracker](https://github.com/sdv1708/ai-model-benchmark/issues).
-A recorded video of the walkthrough is tracked in
-[issue #49](https://github.com/sdv1708/ai-model-benchmark/issues/49). No recording exists yet.
+[Issue #49](https://github.com/sdv1708/ai-model-benchmark/issues/49) tracks a recorded video
+of the walkthrough. No recording exists yet.
 The `VALIDATION_ISSUE_*.md` files keep their original wording from that period.

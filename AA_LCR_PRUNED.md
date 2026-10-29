@@ -23,7 +23,7 @@ accuracy 1.0. This proves plumbing only. There are no real provider calls or key
 
 ## Evaluate a model on the pinned benchmark
 
-The main project repository supplies `task2/data/aa-lcr-reference-panel.json`.
+The [main project repository](https://github.com/sdv1708/ai-model-benchmark) supplies `task2/data/aa-lcr-reference-panel.json`.
 Set `AA_LCR_PANEL` to its absolute path, plus provider environment variables.
 Use the same context-capable model settings and judge policy when comparing runs.
 
@@ -162,7 +162,7 @@ Primary sources read before implementation:
 - [EvalScope contribution guide](https://evalscope.readthedocs.io/en/latest/advanced_guides/add_benchmark.html)
 - Pinned local loader, AA-LCR adapter, judge output contract and issue #19 integration
 
-The challenge repository includes an independent 1,200-case native loader/replay
+The main project repository includes an independent 1,200-case native loader/replay
 audit across two strategies, five ratios, twenty seeds and six holdout sets. It
 checks original IDs, weights, strata, allocation counts, references and scores.
 Its tiny document contents are loader fixtures and are never inferred or judged.

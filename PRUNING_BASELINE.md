@@ -1,4 +1,4 @@
-# Pruning development baseline — issue #18
+# Pruning development baseline (issue #18)
 
 Upstream: https://github.com/modelscope/evalscope
 
@@ -12,7 +12,7 @@ This is a derived development repository, not a GitHub fork-network fork.
 The public upstream's Git history, Apache-2.0 LICENSE and source attribution
 are retained. Never push this project's artifacts or data to the upstream
 repository. The synthetic six-row
-fixture in this repository contains no challenge benchmark content.
+fixture in this repository contains no real benchmark content.
 
 ## Scope
 
@@ -21,7 +21,7 @@ Issue #18 establishes the extension environment and a minimal native smoke path.
 by default. It tests integration, not statistical performance. It is not
 `live_code_bench_pruned` or AA-LCR, and its exact-match scores are not scores for
 those benchmarks. Their production adapters and comparison workflow belong to
-issues #19–#21 in the main project repository.
+issues #19–#21 in the [main project repository](https://github.com/sdv1708/ai-model-benchmark).
 
 ## Install and run
 
@@ -114,7 +114,7 @@ excluded from analysis, since upstream has no repository-wide mypy contract:
 ```
 
 Public test seams are the registry/configuration, `load_dataset()` and actual
-CLI-generated reports, as specified in the parent challenge PRD. Tests do not
+CLI-generated reports, as specified in the main project PRD. Tests do not
 replace loaders/evaluator internals. The model boundary uses upstream `mock_llm`.
 Check `VALIDATION_ISSUE_18.md` for measured results and platform limitations.
 

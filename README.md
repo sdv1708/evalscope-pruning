@@ -1,9 +1,11 @@
 # EvalScope benchmark pruning
 
-A full benchmark run is slow and expensive when the only question is go or no-go: does a model meet a score requirement?
-This repository extends [EvalScope](https://github.com/modelscope/evalscope) to test that question on fewer questions.
-It selects a weighted subset of a benchmark from historical reference grades, runs that subset through the normal EvalScope evaluator, and compares the saved result against a full run.
-The comparison reports whether the subset gives the same go/no-go decision and how far the subset score can move.
+A full benchmark run is slow and expensive when the only question is go/no-go: does a model meet a score requirement?
+This repository extends [EvalScope](https://github.com/modelscope/evalscope) to answer that go/no-go question with fewer benchmark items.
+It uses historical reference grades to select a weighted subset of a benchmark.
+The normal EvalScope evaluator runs that subset.
+A comparison tool then reads the saved subset run and a saved full run.
+It reports whether the subset gives the same go/no-go decision and how far the subset score can move.
 This is a personal project. The historical analysis and the reference panels are in the [main project repository](https://github.com/sdv1708/ai-model-benchmark).
 
 **Upstream base: [`modelscope/evalscope@66f0945d145ce6c30de40253cd78144003c6f1fe`](https://github.com/modelscope/evalscope/tree/66f0945d145ce6c30de40253cd78144003c6f1fe).**
@@ -18,10 +20,10 @@ It is a derived repository, not a GitHub fork-network fork.
 | `aa_lcr_pruned` dataset adapter | `evalscope/benchmarks/aa_lcr_pruned/` | Selects AA-LCR long-context questions by document length and difficulty strata. It uses an LLM judge. |
 | Shared reference pruning | `evalscope/benchmarks/_reference_pruning/` | Excludes the target model's grades, allocates the budget across strata, and records a weight for each selected question. |
 | `compare_runs` tool | `evalscope_ext/tools/compare_runs.py` | Reads two saved runs, checks that they are compatible, and reports the weighted scores, the completion bounds, and the decisions. |
-| `pruning_smoke` dataset | `evalscope/benchmarks/pruning_smoke/` | A six-row synthetic dataset that tests the integration only. |
-| Synthetic smoke example | `examples/aa_lcr_pruned/smoke.py` | Runs a full run, a 25% subset run, and the comparison against a local scripted endpoint. |
+| `pruning_smoke` dataset | `evalscope/benchmarks/pruning_smoke/` | Provides a six-row synthetic dataset that tests the integration only. |
+| Synthetic smoke example | `examples/aa_lcr_pruned/smoke.py` | Evaluates all questions, then a 25% subset, against a local scripted endpoint. Then it compares the two saved runs. |
 
-The adapters register through the normal EvalScope benchmark registry.
+The adapters register through the normal EvalScope registry.
 Prompt construction, model calls, the coding sandbox, judging, and reports stay in the upstream framework.
 
 ## Current result
@@ -31,7 +33,8 @@ This gives **0% sample saving**.
 The project tested subsets that keep 10%, 20%, 30%, and 50% of the questions.
 Each of these subsets failed at least one retrospective fidelity gate for score, model ordering, or decision.
 Full retention is therefore the conservative default.
-This result does not prove that every smaller selection method fails, and no live cost saving is measured.
+This result does not prove that every smaller selection method fails.
+The project did not measure a live cost saving.
 
 ## Quick start
 
@@ -55,7 +58,8 @@ Run the synthetic smoke test with one command:
 ```
 
 The command starts a scripted model and judge on `127.0.0.1`.
-It runs the real evaluator twice, once on 12 questions and once on a 3-question subset, and then compares the saved runs.
+It runs the real evaluator twice: once on 12 questions and once on a 3-question subset.
+Then it compares the two saved runs.
 Exit code 0 means that the comparison succeeded.
 Use a new `--work-dir` for each run, because the evaluator reuses cached results.
 The expected output has `full_score` 1.0, `pruned_score` 1.0, full decision `GO`, and subset decision `inconclusive`.
