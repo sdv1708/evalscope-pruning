@@ -1,26 +1,85 @@
-> **Task 2 reviewer start:** [install, test, run and interpret the pruning workflow](TASK2_README.md).
-> Upstream base: **`66f0945d145ce6c30de40253cd78144003c6f1fe`**;
-> tested runtime: **`800119ff6870ca958f5d8459970f5fe75bfac305`**.
-> Native datasets: `live_code_bench_pruned`, `aa_lcr_pruned`;
-> comparison: `python -m evalscope_ext.tools.compare_runs --full FULL --pruned PRUNED`.
-> Defended defaults retain **315/315 coding and 100/100 long-context questions**:
-> **0% demonstrated sample saving**. The [written walkthrough](TASK2_README.md#written-walkthrough)
-> is available; recording is [deferred to issue #49](https://github.com/sdv1708/ai-model-benchmark/issues/49)
-> and remains required for submission.
+# EvalScope benchmark pruning
 
-> **Private pruning development baseline:** upstream `modelscope/evalscope`, exact
-> base **`66f0945d145ce6c30de40253cd78144003c6f1fe`**. See
-> [PRUNING_BASELINE.md](PRUNING_BASELINE.md) for issue #18's native `pruning_smoke`
-> integration, setup, provenance, limitations and verification. Original upstream
-> documentation follows.
+A full benchmark run is slow and expensive when the only question is go or no-go: does a model meet a score requirement?
+This repository extends [EvalScope](https://github.com/modelscope/evalscope) to test that question on fewer questions.
+It selects a weighted subset of a benchmark from historical reference grades, runs that subset through the normal EvalScope evaluator, and compares the saved result against a full run.
+The comparison reports whether the subset gives the same go/no-go decision and how far the subset score can move.
+This is a personal project. The historical analysis and the reference panels are in the [main project repository](https://github.com/sdv1708/ai-model-benchmark).
 
-> **Issue #19:** [Native LiveCodeBench pruning](LIVE_CODE_BENCH_PRUNED.md) adds
-> `live_code_bench_pruned`, exact historical selection, weighted reporting,
-> an offline example and the live endpoint run instructions.
+**Upstream base: [`modelscope/evalscope@66f0945d145ce6c30de40253cd78144003c6f1fe`](https://github.com/modelscope/evalscope/tree/66f0945d145ce6c30de40253cd78144003c6f1fe).**
+This repository keeps the upstream Git history, the Apache-2.0 [LICENSE](LICENSE), and the upstream attribution.
+It is a derived repository, not a GitHub fork-network fork.
 
-> **Issue #20:** [Native AA-LCR pruning](AA_LCR_PRUNED.md) adds `aa_lcr_pruned`,
-> length/difficulty and metadata strata, pinned historical source identities,
-> weighted reporting with judge-noise limits, and a credential-free CLI smoke.
+## What this repository adds to upstream
+
+| Addition | Location | Purpose |
+| --- | --- | --- |
+| `live_code_bench_pruned` dataset adapter | `evalscope/benchmarks/live_code_bench_pruned/` | Selects LiveCodeBench coding questions by historical difficulty strata. It keeps the original grading tests. |
+| `aa_lcr_pruned` dataset adapter | `evalscope/benchmarks/aa_lcr_pruned/` | Selects AA-LCR long-context questions by document length and difficulty strata. It uses an LLM judge. |
+| Shared reference pruning | `evalscope/benchmarks/_reference_pruning/` | Excludes the target model's grades, allocates the budget across strata, and records a weight for each selected question. |
+| `compare_runs` tool | `evalscope_ext/tools/compare_runs.py` | Reads two saved runs, checks that they are compatible, and reports the weighted scores, the completion bounds, and the decisions. |
+| `pruning_smoke` dataset | `evalscope/benchmarks/pruning_smoke/` | A six-row synthetic dataset that tests the integration only. |
+| Synthetic smoke example | `examples/aa_lcr_pruned/smoke.py` | Runs a full run, a 25% subset run, and the comparison against a local scripted endpoint. |
+
+The adapters register through the normal EvalScope benchmark registry.
+Prompt construction, model calls, the coding sandbox, judging, and reports stay in the upstream framework.
+
+## Current result
+
+The recorded defaults keep **315 of 315 coding questions** and **100 of 100 long-context questions**.
+This gives **0% sample saving**.
+The project tested subsets that keep 10%, 20%, 30%, and 50% of the questions.
+Each of these subsets failed at least one retrospective fidelity gate for score, model ordering, or decision.
+Full retention is therefore the conservative default.
+This result does not prove that every smaller selection method fails, and no live cost saving is measured.
+
+## Quick start
+
+The quick start needs Git, [uv](https://docs.astral.sh/uv/), Python 3.12, and internet access to install packages.
+It does not need a GPU, provider credentials, or paid model calls.
+The commands below use PowerShell on Windows, the tested platform.
+On Linux or macOS, replace `.venv/Scripts/python.exe` with `.venv/bin/python`.
+
+```powershell
+git clone -c core.autocrlf=false https://github.com/sdv1708/evalscope-pruning.git
+cd evalscope-pruning
+uv venv --python 3.12
+uv pip install --python .venv/Scripts/python.exe -r requirements/pruning-baseline.txt
+uv pip install --python .venv/Scripts/python.exe --no-deps -e .
+```
+
+Run the synthetic smoke test with one command:
+
+```powershell
+.venv/Scripts/python.exe examples/aa_lcr_pruned/smoke.py --compare --work-dir outputs/smoke-demo
+```
+
+The command starts a scripted model and judge on `127.0.0.1`.
+It runs the real evaluator twice, once on 12 questions and once on a 3-question subset, and then compares the saved runs.
+Exit code 0 means that the comparison succeeded.
+Use a new `--work-dir` for each run, because the evaluator reuses cached results.
+The expected output has `full_score` 1.0, `pruned_score` 1.0, full decision `GO`, and subset decision `inconclusive`.
+[TASK2_README.md](TASK2_README.md#check-registration-and-run-without-credentials) explains each output field.
+
+## Detailed guides
+
+- [Reproduce the pruning workflow](TASK2_README.md): install, tests, real runs, and a written walkthrough.
+- [LiveCodeBench pruning](LIVE_CODE_BENCH_PRUNED.md): the coding adapter, its strata, and the sandbox prerequisites.
+- [AA-LCR pruning](AA_LCR_PRUNED.md): the long-context adapter, the source pins, and the judge limits.
+- [Compare full and pruned runs](COMPARE_RUNS.md): the comparison contract and the output schema.
+- [Pruning baseline](PRUNING_BASELINE.md): the upstream pin, the dependency snapshot, and the `pruning_smoke` dataset.
+
+## Project history
+
+This work started as Task 2 of an AI model quality challenge.
+The `VALIDATION_ISSUE_*.md` files are the verification records from that period.
+They keep their original wording, which includes references to a private repository, reviewers, and a submission.
+Those references describe the project at that time. They do not describe the current repository.
+Issue numbers in the guides refer to the [main project issue tracker](https://github.com/sdv1708/ai-model-benchmark/issues).
+
+The upstream EvalScope README follows without changes.
+
+---
 
 <p align="center">
     <br>
@@ -419,7 +478,3 @@ If you use EvalScope in your research, please cite our work:
     url={https://github.com/modelscope/evalscope}
 }
 ```
-# Native full-versus-pruned comparison
-
-Issue #21 adds `python -m evalscope_ext.tools.compare_runs --full results_full --pruned results_pruned`.
-See [the reproducible workflow and evidence contract](COMPARE_RUNS.md).

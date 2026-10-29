@@ -23,7 +23,7 @@ accuracy 1.0. This proves plumbing only. There are no real provider calls or key
 
 ## Evaluate a model on the pinned benchmark
 
-The submission repository supplies `task2/data/aa-lcr-reference-panel.json`.
+The main project repository supplies `task2/data/aa-lcr-reference-panel.json`.
 Set `AA_LCR_PANEL` to its absolute path, plus provider environment variables.
 Use the same context-capable model settings and judge policy when comparing runs.
 
@@ -92,7 +92,7 @@ and unique. Duplicate JSON keys are rejected. Missing/duplicate source questions
 metadata drift, missing documents and insufficient coverage budgets fail explicitly.
 Unrelated source questions do not enter the reference population.
 
-The submission exporter verifies all 100 official question identities. Ninety-five
+The main project's exporter verifies all 100 official question identities. Ninety-five
 recorded question strings match exactly; five match the exact UTF-8-to-Mac-Roman
 decoding error recorded in provenance. Runtime fingerprints use official text;
 runtime matching never applies fuzzy text repair. This does not establish identical

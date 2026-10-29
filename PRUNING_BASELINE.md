@@ -1,17 +1,17 @@
-# Private pruning development baseline — issue #18
+# Pruning development baseline — issue #18
 
 Upstream: https://github.com/modelscope/evalscope
 
 **Exact upstream base: `66f0945d145ce6c30de40253cd78144003c6f1fe`.**
 
-Private development repository: https://github.com/sdv1708/evalscope-pruning
+Development repository: https://github.com/sdv1708/evalscope-pruning
 
 Branch: `feature/issue-18-evalscope-baseline`.
 
 This is a derived development repository, not a GitHub fork-network fork.
 The public upstream's Git history, Apache-2.0 LICENSE and source attribution
-are retained. A separate private repository keeps development private. Never
-push challenge artifacts or data to the public upstream. The synthetic six-row
+are retained. Never push this project's artifacts or data to the upstream
+repository. The synthetic six-row
 fixture in this repository contains no challenge benchmark content.
 
 ## Scope
@@ -21,7 +21,7 @@ Issue #18 establishes the extension environment and a minimal native smoke path.
 by default. It tests integration, not statistical performance. It is not
 `live_code_bench_pruned` or AA-LCR, and its exact-match scores are not scores for
 those benchmarks. Their production adapters and comparison workflow belong to
-issues #19–#21 in the challenge repository.
+issues #19–#21 in the main project repository.
 
 ## Install and run
 
@@ -143,5 +143,5 @@ git fetch upstream
 git show 66f0945d145ce6c30de40253cd78144003c6f1fe:LICENSE
 ```
 
-`git clone` does not copy local remote definitions; the private repository's
+`git clone` does not copy local remote definitions; this repository's
 `origin` is not a substitute for the documented public `upstream`.

@@ -7,7 +7,7 @@ caching and ordinary reports remain in use.
 
 Upstream base: **`66f0945d145ce6c30de40253cd78144003c6f1fe`**. This branch
 includes the issue #18 baseline `152d811484e0c3ad3d9329af9befb73e961d8872` on top
-of private main. The public Hugging Face dataset is pinned to
+of this repository's main branch. The public Hugging Face dataset is pinned to
 `e70df9620dd54c12afac5e2881355de6f9ece2e9` in benchmark metadata.
 
 ## Install and run offline
