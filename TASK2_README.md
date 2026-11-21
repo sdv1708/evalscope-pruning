@@ -1,14 +1,13 @@
-# Task 2: reproduce the native pruning workflow
+# Reproduce the native pruning workflow
 
-This private [EvalScope-derived repository](https://github.com/sdv1708/evalscope-pruning)
+This [EvalScope-derived repository](https://github.com/sdv1708/evalscope-pruning)
 contains the actual pruners and saved-run comparator. It preserves upstream history
 and licensing; it is a derived repository rather than a GitHub fork-network fork.
 
 **Upstream base: `66f0945d145ce6c30de40253cd78144003c6f1fe`.**
 **Tested runtime: `800119ff6870ca958f5d8459970f5fe75bfac305`.**
-Issue #26 changes documentation only. The submission's historical analysis,
-reference panels, handouts and MMMU proposal live in the separate private
-[challenge repository](https://github.com/sdv1708/ai-model-benchmark).
+The historical analysis, reference panels, and MMMU proposal live in the
+[main project repository](https://github.com/sdv1708/ai-model-benchmark).
 
 The defended result is **full retention: 315 coding / 100 AA-LCR questions**.
 Smaller tested selections failed at least one retrospective fidelity gate.
@@ -16,8 +15,8 @@ No smaller production compression or live cost saving is established.
 
 ## Install from a clean clone
 
-Use Git, uv, Python 3.12 and PowerShell 7. Access to the private repository and
-internet for package installation are prerequisites. From a parent directory:
+Use Git, uv, Python 3.12, and PowerShell 7. Internet access for package
+installation is a prerequisite. From a parent directory:
 
 ```powershell
 git clone -c core.autocrlf=false https://github.com/sdv1708/evalscope-pruning.git
@@ -105,7 +104,7 @@ The complete coding contract is in [COMPARE_RUNS.md](COMPARE_RUNS.md#real-coding
 with original problem/test-case and Docker sandbox prerequisites in
 [LIVE_CODE_BENCH_PRUNED.md](LIVE_CODE_BENCH_PRUNED.md).
 [AA_LCR_PRUNED.md](AA_LCR_PRUNED.md) supplies historical source/document setup and
-the explicit judge configuration. The submission's
+the explicit judge configuration. The main project's historical
 [operational runbook](https://github.com/sdv1708/ai-model-benchmark/blob/7882d16/task2/ISSUE_25_GUIDE.md#7-real-endpoint-runbook)
 has full paired coding and AA-LCR PowerShell templates, including comparison.
 These are provider templates, not records of live inference performed here.
@@ -117,7 +116,7 @@ Key configuration contract:
 | `--datasets live_code_bench_pruned` | Coding adapter with original grading tests |
 | `--datasets aa_lcr_pruned` | Long-document adapter with LLM judging |
 | `dataset_args.<dataset>.extra_params.pruning_strategy` | `difficulty_stratified` / `length_difficulty_stratified` defended strategies |
-| `extra_params.reference_path` | Absolute path to the matching challenge `task2/data/*-reference-panel.json` |
+| `extra_params.reference_path` | Absolute path to the matching main project `task2/data/*-reference-panel.json` |
 | `extra_params.prune_ratio` | Fraction **retained**, rounded up; 1.0 is defended |
 | `--work-dir FULL` / `--work-dir PRUNED` | Actual flag at this pin; the brief's `--output` is conceptual |
 | `--no-timestamp` | Makes those exact saved run roots |
@@ -132,7 +131,7 @@ Match model, population, source revision, prompt, generation, judge, sandbox and
 repetitions. Explicitly exclude canonical reference model names if testing aliases
 of historical models; the adapter cannot infer arbitrary aliases. The comparator
 needs exact roots containing `configs/task_config.yaml`, `reports/` and `reviews/`.
-Historical challenge JSONL files alone are not native runs. Set provider secrets
+Historical JSONL files from the main project alone are not native runs. Set provider secrets
 in environment variables and keep them out of shared command/config evidence.
 
 ## Written walkthrough
@@ -161,22 +160,15 @@ in environment variables and keep them out of shared command/config evidence.
 5. **Weighting:** Each selected question in group h has weight `N_h/(N*n_h)`.
    A group mean represents its population share. This corrects unequal allocation;
    it does not make an unrepresentative model panel representative of future models.
-6. **Limits and handouts:** Full retention removes unknown questions from the
+6. **Limits:** Full retention removes unknown questions from the
    recorded pool, not generation variability or judge error. One saved verdict per
-   answer cannot estimate judge variance. Handout A defends the method for engineers;
-   Handout B explains operation and customer consequences. Find both via the
-   [submission checklist](https://github.com/sdv1708/ai-model-benchmark/blob/feature/issue-26-task2-documentation/SUBMISSION_CHECKLIST.md).
+   answer cannot estimate judge variance.
 7. **Multimodal roadmap:** Cover the full MMMU inventory, 11,550 across 30 subjects,
    rather than only the 660 supplied references. Pair original images with
    answer-preserving visual stresses, plus no-image, factual-text and visual-fact
    controls. This diagnoses visual-path sensitivity through an API. Only an
    encoder-only intervention could support encoder-specific causality. The existing
    image harness is offline/synthetic; the full probe remains a design proposal.
-
-This walkthrough can be read and rehearsed before recording. **Video: deferred to
-[issue #49](https://github.com/sdv1708/ai-model-benchmark/issues/49) at the owner's
-request; no recording/link exists yet.** It remains required for submission and
-is tracked separately from issue #26's written documentation.
 
 ## Sources and next experiment
 
@@ -193,3 +185,11 @@ an untouched model, repeat generation and independently rejudge fixed answers,
 audit failures with humans, and measure actual tokens, wall time and cost.
 Validate customer tasks and serving performance before treating benchmark GO
 as deployment approval.
+
+## Project history
+
+This guide started as the Task 2 reviewer guide of an AI model quality challenge.
+Issue numbers refer to the [main project issue tracker](https://github.com/sdv1708/ai-model-benchmark/issues).
+[Issue #49](https://github.com/sdv1708/ai-model-benchmark/issues/49) tracks a recorded video
+of the walkthrough. No recording exists yet.
+The `VALIDATION_ISSUE_*.md` files keep their original wording from that period.

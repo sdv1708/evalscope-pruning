@@ -23,7 +23,7 @@ accuracy 1.0. This proves plumbing only. There are no real provider calls or key
 
 ## Evaluate a model on the pinned benchmark
 
-The submission repository supplies `task2/data/aa-lcr-reference-panel.json`.
+The [main project repository](https://github.com/sdv1708/ai-model-benchmark) supplies `task2/data/aa-lcr-reference-panel.json`.
 Set `AA_LCR_PANEL` to its absolute path, plus provider environment variables.
 Use the same context-capable model settings and judge policy when comparing runs.
 
@@ -92,7 +92,7 @@ and unique. Duplicate JSON keys are rejected. Missing/duplicate source questions
 metadata drift, missing documents and insufficient coverage budgets fail explicitly.
 Unrelated source questions do not enter the reference population.
 
-The submission exporter verifies all 100 official question identities. Ninety-five
+The main project's exporter verifies all 100 official question identities. Ninety-five
 recorded question strings match exactly; five match the exact UTF-8-to-Mac-Roman
 decoding error recorded in provenance. Runtime fingerprints use official text;
 runtime matching never applies fuzzy text repair. This does not establish identical
@@ -162,7 +162,7 @@ Primary sources read before implementation:
 - [EvalScope contribution guide](https://evalscope.readthedocs.io/en/latest/advanced_guides/add_benchmark.html)
 - Pinned local loader, AA-LCR adapter, judge output contract and issue #19 integration
 
-The challenge repository includes an independent 1,200-case native loader/replay
+The main project repository includes an independent 1,200-case native loader/replay
 audit across two strategies, five ratios, twenty seeds and six holdout sets. It
 checks original IDs, weights, strata, allocation counts, references and scores.
 Its tiny document contents are loader fixtures and are never inferred or judged.

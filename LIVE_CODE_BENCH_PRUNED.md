@@ -7,7 +7,7 @@ caching and ordinary reports remain in use.
 
 Upstream base: **`66f0945d145ce6c30de40253cd78144003c6f1fe`**. This branch
 includes the issue #18 baseline `152d811484e0c3ad3d9329af9befb73e961d8872` on top
-of private main. The public Hugging Face dataset is pinned to
+of this repository's main branch. The public Hugging Face dataset is pinned to
 `e70df9620dd54c12afac5e2881355de6f9ece2e9` in benchmark metadata.
 
 ## Install and run offline
@@ -94,7 +94,7 @@ lexical ties. Inside each group the lowest SHA-256 priorities of
 `lcb-pruning-v1:{seed}:{index}` win. This exactly reproduces the independent
 analysis design. Target references are excluded before groups are constructed.
 
-Challenge reference data stays in the challenge repository at
+Reference panel data stays in the [main project repository](https://github.com/sdv1708/ai-model-benchmark) at
 `task2/data/lcb-reference-panel.json`; this generic EvalScope repository includes
 only synthetic fixtures. The exporter recovers 315 questions from saved GPT-OSS
 Harmony prompt tokens, joins grades by index, and records six source-file hashes.
@@ -122,7 +122,7 @@ population/selected sizes, strategy, ratio, seed, references and panel-file SHA-
 ## Live endpoint run
 
 Use the original benchmark questions **and their test cases**, or let the standard
-loader download the pinned source. Supplied challenge `Evals/` files contain
+loader download the pinned source. The main project's `Evals/` files contain
 outputs/grades, not hidden tests for fresh grading. The parity audit's empty-test
 loader fixtures must never be used for a live evaluation.
 
@@ -153,9 +153,9 @@ rows is not the recorded 315-row reference.
 - `evalscope/benchmarks/live_code_bench_pruned/`: typed panel, selector and adapter
 - `tests/api/test_live_code_bench_pruned.py`: registry, loader, grading and actual CLI tests
 - `examples/live_code_bench_pruned/`: runnable offline task
-- Challenge `task2/tools/export_lcb_panel.py`: reproducible panel export
-- Challenge `task2/tools/audit_evalscope_lcb.py`: 1,200 native-loader parity cases and historical grade replay
-- Challenge `task2/tools/verify_lcb_source.py`: optional public-source identity verification
+- Main project `task2/tools/export_lcb_panel.py`: reproducible panel export
+- Main project `task2/tools/audit_evalscope_lcb.py`: 1,200 native-loader parity cases and historical grade replay
+- Main project `task2/tools/verify_lcb_source.py`: optional public-source identity verification
 
 Discovery index and docs are generated with upstream tools. The statistics pass
 cannot load a default population without a user reference panel, so unavailable

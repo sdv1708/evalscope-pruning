@@ -66,7 +66,7 @@ Each exact run root must contain `configs/task_config.yaml`,
 `reports/<model>/<benchmark>.json` and
 `reviews/<model>/<benchmark>_<subset>.jsonl`. Reports must use Native schema 2,
 with generated resolved benchmark settings, evaluation version and a complete
-execution summary. Historical challenge `Evals/` files alone are not Native runs.
+execution summary. Historical `Evals/` files from the main project alone are not Native runs.
 
 Supported benchmarks are `live_code_bench[_pruned]` and `aa_lcr[_pruned]`.
 The pruned side requires native pruning traces. The full side must contain
